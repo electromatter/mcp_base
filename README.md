@@ -10,8 +10,8 @@ struct mcp_parse buf = MCP_START_INITIALIZER(base, size);
 mcp_varint_t length = mcp_varint(&buf);
 /* ... */
 if (!mcp_ok(&buf))
-	/* There was an error. */
-/* Otherwise, everything is fine */
+	/* There was an error! */
+/* Otherwise, everything is fine. */
 ```
 
 Here is an example of using mcp-base to pack a varint:
@@ -22,8 +22,8 @@ int ret = 0;
 ret |= mcg_varint(buf, 123);
 /* ... */
 if (ret)
-    /* There was an error. */
-/* Otherwise, everything is fine */
+    /* There was an error! */
+/* Otherwise, everything is fine. */
 ```
 
 #### TODO

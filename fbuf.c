@@ -96,7 +96,7 @@ size_t fbuf_expand(struct fbuf *buf, size_t requested_size)
 	fbuf_assert(buf);
 
 	/* check if we can already satisfy this request */
-	if (fbuf_avail(buf) >= requested_size)
+	if (fbuf_wavail(buf) >= requested_size)
 		return fbuf_wavail(buf);
 
 	/* compute the required size of the buffer */
@@ -123,7 +123,8 @@ size_t fbuf_expand(struct fbuf *buf, size_t requested_size)
 	/* compact the buffer into the new buffer */
 	memcpy(new_base, fbuf_ptr(buf), fbuf_avail(buf));
 
-	free(buf->base);
+	if (buf->base)
+		free(buf->base);
 
 	/* update the pointers*/
 	buf->base = new_base;

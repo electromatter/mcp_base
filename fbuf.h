@@ -20,7 +20,7 @@ struct fbuf {
 #define FBUF_INITIALIZER		{NULL, 0, FBUF_MAX, 0, 0}
 #define fbuf_init(buf, max)		do {(buf)->base = NULL;		\
 									(buf)->size = 0;		\
-									(buf)->max = (max);		\
+									(buf)->max_size = (max);	\
 									(buf)->start = 0;		\
 									(buf)->end = 0;} while (0);
 /* clear the contents of the buffer, but keep the memory block */

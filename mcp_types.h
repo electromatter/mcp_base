@@ -12,9 +12,9 @@
  * */
 
 /* enable if float and double are the alias-able to mcp_int_t and mcp_long_t */
-//#define USE_UNSAFE_MCP_FLOAT		1
+/* #define USE_UNSAFE_MCP_FLOAT		1 */
 /* enable if the system is twos complement */
-//#define USE_MCP_TWOS_COMP			1
+/* #define USE_MCP_TWOS_COMP		1 */
 
 /* signed */
 typedef int mcp_svarint_t;
