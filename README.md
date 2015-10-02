@@ -30,8 +30,12 @@ if (ret)
 ---
 api documetation... tests... verify mcp_float, mcg_float
 
-splint/clang static
+splint/clang static analysis
+
+valgrind tests
 
 check rounding/nan/inf
 
 remove limitations on varint
+
+check grammer and spelling

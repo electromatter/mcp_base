@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <time.h>
+
+/* NOTE: It is important that assert always aborts on failed assertion */
 #undef NDEBUG
 #include <assert.h>
 

@@ -5,9 +5,11 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
+
+/* NOTE: It is important that assert always aborts on failed assertion */
 #undef NDEBUG
 #include <assert.h>
-#include <string.h>
 
 static void hexdump(const void *data, size_t size)
 {
@@ -54,7 +56,7 @@ static void hexdump(const void *data, size_t size)
 	fflush(stderr);
 }
 
-static int simple_test(void)
+static void simple_test(void)
 {
 	struct fbuf buf = FBUF_INITIALIZER;
 	int err = 0;
@@ -91,19 +93,26 @@ static int simple_test(void)
 	/* test if the output is the same as what we expected */
 	assert(fbuf_avail(&buf) == sizeof(expected));
 	assert(memcmp(fbuf_ptr(&buf), expected, sizeof(expected)) == 0);
-	
-	return 0;
 }
 
-static int float_test(void)
+static void range_test(void)
+{
+	/* TODO: range test */
+}
+
+static void limit_test(void)
 {
 	/* TODO: float test */
-	return 0;
 }
 
-#define NUM_TESTS		(2)
-static int (*tests[NUM_TESTS])(void) = {simple_test, float_test};
-static const char *test_names[NUM_TESTS] = {"simple_test", "float_test"};
+static void float_test(void)
+{
+	/* TODO: float test */
+}
+
+#define NUM_TESTS		(4)
+static void (*tests[NUM_TESTS])(void) = {simple_test, range_test, limit_test, float_test};
+static const char *test_names[NUM_TESTS] = {"simple_test", "range_test", "limit_test", "float_test"};
 
 static int print_usage();
 
@@ -113,7 +122,8 @@ static int do_test(int test_num)
 		return print_usage();
 	fprintf(stderr, "starting subtest: %s\n", test_names[test_num]);
 	fflush(stderr);
-	return tests[test_num]();
+	tests[test_num]();
+	return 0;
 }
 
 static int print_usage()

@@ -237,10 +237,11 @@ int mcg_ulong(struct fbuf *buf, mcp_ulong_t value)
 
 int mcg_byte(struct fbuf *buf, mcp_byte_t value)
 {
-	const mcp_byte_t max = ALL_ONES(7),
+	const int sig_bits = 7;
+	const mcp_byte_t max = ALL_ONES(sig_bits),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_ubyte_t sign_bit = ONE_BIT(7);
+	const mcp_ubyte_t sign_bit = ONE_BIT(sig_bits);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
@@ -264,10 +265,11 @@ int mcg_byte(struct fbuf *buf, mcp_byte_t value)
 
 int mcg_short(struct fbuf *buf, mcp_short_t value)
 {
-	const mcp_short_t max = ALL_ONES(15),
+	const int sig_bits = 15;
+	const mcp_short_t max = ALL_ONES(sig_bits),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_ushort_t sign_bit = ONE_BIT(15);
+	const mcp_ushort_t sign_bit = ONE_BIT(sig_bits);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
@@ -291,10 +293,11 @@ int mcg_short(struct fbuf *buf, mcp_short_t value)
 
 int mcg_int(struct fbuf *buf, mcp_int_t value)
 {
-	const mcp_int_t max = ALL_ONES(31),
+	const int sig_bits = 31;
+	const mcp_int_t max = ALL_ONES(sig_bits),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_uint_t sign_bit = ONE_BIT(31);
+	const mcp_uint_t sign_bit = ONE_BIT(sig_bits);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
@@ -318,10 +321,11 @@ int mcg_int(struct fbuf *buf, mcp_int_t value)
 
 int mcg_long(struct fbuf *buf, mcp_long_t value)
 {
-	const mcp_long_t max = ALL_ONES(63),
+	const int sig_bits = 63;
+	const mcp_long_t max = ALL_ONES(sig_bits),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_ulong_t sign_bit = ONE_BIT(63);
+	const mcp_ulong_t sign_bit = ONE_BIT(sig_bits);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
