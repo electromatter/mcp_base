@@ -35,7 +35,7 @@ struct fbuf {
 #define fbuf_wavail(buf)		((buf)->size - (buf)->end)
 
 /* frees any blocks of memory owned by fbuf and resets the
- * buffer so it can be reused */
+ * buffer so it can be reused as if it were just initialized with fbuf_init */
 void fbuf_free(struct fbuf *buf);
 
 /* returns a pointer to the write end of the buffer with atleast require bytes

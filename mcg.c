@@ -12,28 +12,12 @@
 /* returns an integer with a number of ones set starting from the lsb */
 #define ALL_ONES(num_bits)      ((~(mcp_ulong_t)0) >>				\
 									(NUM_BITS(mcp_ulong_t) - (num_bits)))
+/* returns a long with bit number bit_num set, counting from the lsb */
+#define ONE_BIT(bit_num)		(((mcp_ulong_t)1) << (bit_num))
 
-/* Enabling this causes mcg to use type-punning when interpreting floats */
-#ifndef USE_UNSAFE_MCP_FLOAT
-# define USE_UNSAFE_MCP_FLOAT			0
-#endif
-
-/* Enable this on a two's complement machine. It is faster. */
-#ifndef USE_MCP_TWOS_COMP
-# define USE_MCP_TWOS_COMP				0
-#endif
-
-#if !USE_UNSAFE_MCP_FLOAT
+#if !MCP_SYSTEM_IEEE754_FLOAT
 # include <math.h>
 #endif
-
-/* This is to aid in debugging. Enabling this raises an assertion failure
- * when an invalid value is passed to mcg */
-#ifndef USE_MCP_ASSERT_OVERFLOW
-# define USE_MCP_ASSERT_OVERFLOW	0
-#endif
-
-/*TODO: change large integer constants; add UL/ULL */
 
 /* for compatibility with varint28 */
 #define MCG_BYTES_MAX_SIZE		(ALL_ONES(28))
@@ -48,9 +32,18 @@ int mcg_raw(struct fbuf *buf, const void *data, size_t size)
 
 int mcg_varint(struct fbuf *buf, mcp_varint_t value)
 {
-	const int max_result_size = (NUM_BITS(value) + 6) / 7;
+	const int num_bits = 32,
+			max_result_size = (num_bits + 6) / 7;
 	unsigned char *dest = fbuf_wptr(buf, max_result_size);
 	int i = 0;
+
+#if USE_MCP_ASSERT_OVERFLOW
+	assert(value <= ALL_ONES(num_bits));
+#endif
+
+	/* bounds check */
+	if (value > ALL_ONES(num_bits))
+		return 1;
 
 	/* we could not allocate enough space. */
 	if (dest == NULL)
@@ -76,12 +69,17 @@ int mcg_varint(struct fbuf *buf, mcp_varint_t value)
 
 int mcg_varlong(struct fbuf *buf, mcp_varlong_t value)
 {
-	const int max_result_size = (NUM_BITS(value) + 6) / 7;
+	const int num_bits = 64,
+			max_result_size = (num_bits + 6) / 7;
 	unsigned char *dest = fbuf_wptr(buf, max_result_size);
 	int i = 0;
 
-	/* we could not allocate enough space. */
-	if (dest == NULL)
+#if USE_MCP_ASSERT_OVERFLOW
+	assert(value <= ALL_ONES(num_bits));
+#endif
+
+	/* bounds check */
+	if (value > ALL_ONES(num_bits))
 		return 1;
 
 	do {
@@ -104,24 +102,45 @@ int mcg_varlong(struct fbuf *buf, mcp_varlong_t value)
 
 int mcg_svarint(struct fbuf *buf, mcp_svarint_t value)
 {
+	const int sig_bits = NUM_BITS(value) - 1;
+	const mcp_svarint_t max = ALL_ONES(sig_bits),
+					min = -max - 1;
 	mcp_varint_t packed = (mcp_varint_t)value << 2;
+
+#if USE_MCP_ASSERT_OVERFLOW
+	assert(value >= min && value <= max);
+#endif
+
+	/* overflow check */
+	if (value < min || value > max)
+		return 1;
 
 	/* pack sign value */
 	if (value < 0)
-		packed = (((mcp_varint_t)-(value + 1)) << 2) | 1;
+		value = (((mcp_varint_t)-(value + 1)) << 2) | 1;
 
-	return mcg_varlong(buf, packed);
+	return mcg_varint(buf, packed);
 }
 
 int mcg_svarlong(struct fbuf *buf, mcp_svarlong_t value)
 {
-	mcp_varlong_t packed = (mcp_varlong_t)value << 2;
+	const int sig_bits = NUM_BITS(value) - 1;
+	const mcp_svarlong_t max = ALL_ONES(sig_bits),
+					min = -max - 1;
+	mcp_varlong_t packed = (mcp_varint_t)value << 2;
+
+#if USE_MCP_ASSERT_OVERFLOW
+	assert(value >= min && value <= max);
+#endif
+
+	/* overflow check */
+	if (value < min || value > max)
+		return 1;
 
 	/* pack sign value */
 	if (value < 0)
 		value = (((mcp_varlong_t)-(value + 1)) << 2) | 1;
 
-	/* write it out */
 	return mcg_varlong(buf, packed);
 }
 
@@ -144,14 +163,14 @@ int mcg_ubyte(struct fbuf *buf, mcp_ubyte_t value)
 	unsigned char data[1];
 
 #if USE_MCP_ASSERT_OVERFLOW
-	assert_int(value <= ALL_ONES(8));
+	assert(value <= ALL_ONES(8));
 #endif
 
 	/* overflow check */
 	if (value > ALL_ONES(8))
 		return 1;
 
-	/*write value*/
+	/* write value */
 	data[0] = value & 0xff;
 	return mcg_raw(buf, data, sizeof(data));
 }
@@ -161,7 +180,7 @@ int mcg_ushort(struct fbuf *buf, mcp_ushort_t value)
 	unsigned char data[2];
 
 #if USE_MCP_ASSERT_OVERFLOW
-	assert_int(value <= ALL_ONES(16));
+	assert(value <= ALL_ONES(16));
 #endif
 
 	/* overflow check */
@@ -179,7 +198,7 @@ int mcg_uint(struct fbuf *buf, mcp_uint_t value)
 	unsigned char data[4];
 
 #if USE_MCP_ASSERT_OVERFLOW
-	assert_int(value <= ALL_ONES(32));
+	assert(value <= ALL_ONES(32));
 #endif
 
 	/* overflow check */
@@ -199,7 +218,7 @@ int mcg_ulong(struct fbuf *buf, mcp_ulong_t value)
 	unsigned char data[8];
 
 #if USE_MCP_ASSERT_OVERFLOW
-	assert_int(value <= ALL_ONES(64));
+	assert(value <= ALL_ONES(64));
 #endif
 
 	/* overflow check */
@@ -220,20 +239,27 @@ int mcg_ulong(struct fbuf *buf, mcp_ulong_t value)
 
 int mcg_byte(struct fbuf *buf, mcp_byte_t value)
 {
+	const int sig_bits = NUM_BITS(value) - 1;
+	const mcp_byte_t max = ALL_ONES(sig_bits),
+					min = -max - 1;
+#if !MCP_SYSTEM_TWOS_COMP
+	const mcp_ubyte_t sign_bit = ONE_BIT(sig_bits);
+#endif
+
 #if USE_MCP_ASSERT_OVERFLOW
-	assert(value < ALL_ONES(7) && value >= -ALL_ONES(7) - 1);
+	assert(value >= min && value <= max);
 #endif
 
 	/* overflow check */
-	if (value > ALL_ONES(7) || value < -ALL_ONES(7) - 1)
+	if (value < min || value > max)
 		return 1;
 
-#if USE_MCP_TWOS_COMP
+#if MCP_SYSTEM_TWOS_COMP
 	return mcg_ubyte(buf, value);
 #else
 	/* pack two's complement */
 	if (value < 0)
-		return mcg_ubyte(buf, 0x80 | (mcp_ubyte_t)-(value + 1));
+		return mcg_ubyte(buf, sign_bit | (mcp_ubyte_t)(sign_bit + value));
 
 	return mcg_ubyte(buf, value);
 #endif
@@ -241,74 +267,102 @@ int mcg_byte(struct fbuf *buf, mcp_byte_t value)
 
 int mcg_short(struct fbuf *buf, mcp_short_t value)
 {
+	const int sig_bits = NUM_BITS(value) - 1;
+	const mcp_short_t max = ALL_ONES(sig_bits),
+					min = -max - 1;
+#if !MCP_SYSTEM_TWOS_COMP
+	const mcp_ushort_t sign_bit = ONE_BIT(sig_bits);
+#endif
+
 #if USE_MCP_ASSERT_OVERFLOW
-	assert(value < ALL_ONES(15) && value >= -ALL_ONES(15) - 1);
+	assert(value >= min && value <= max);
 #endif
 
 	/* overflow check */
-	if (value > ALL_ONES(15) || value < -ALL_ONES(15) - 1)
+	if (value < min || value > max)
 		return 1;
 
-#if USE_MCP_TWOS_COMP
+#if MCP_SYSTEM_TWOS_COMP
 	return mcg_ushort(buf, value);
 #else
+	/* pack two's complement */
 	if (value < 0)
-		return mcg_ubyte(buf, 0x8000 | (mcp_ushort_t)-(value + 1));
-	return mcg_ubyte(buf, value);
+		return mcg_ushort(buf, sign_bit | (mcp_ushort_t)(sign_bit + value));
+
+	return mcg_ushort(buf, value);
 #endif
 }
 
 int mcg_int(struct fbuf *buf, mcp_int_t value)
 {
+	const int sig_bits = NUM_BITS(value) - 1;
+	const mcp_int_t max = ALL_ONES(sig_bits),
+					min = -max - 1;
+#if !MCP_SYSTEM_TWOS_COMP
+	const mcp_uint_t sign_bit = ONE_BIT(sig_bits);
+#endif
+
 #if USE_MCP_ASSERT_OVERFLOW
-	assert(value < ALL_ONES(31) && value >= -ALL_ONES(31) - 1);
+	assert(value >= min && value <= max);
 #endif
 
 	/* overflow check */
-	if (value > ALL_ONES(31) || value < -ALL_ONES(31) - 1)
+	if (value < min || value > max)
 		return 1;
 
-#if USE_MCP_TWOS_COMP
+#if MCP_SYSTEM_TWOS_COMP
 	return mcg_uint(buf, value);
 #else
+	/* pack two's complement */
 	if (value < 0)
-		return mcg_ubyte(buf, 0x80000000 | (mcp_uint_t)-(value + 1));
-	return mcg_ubyte(buf, value);
+		return mcg_uint(buf, sign_bit | (mcp_uint_t)(sign_bit + value));
+
+	return mcg_uint(buf, value);
 #endif
 }
 
 int mcg_long(struct fbuf *buf, mcp_long_t value)
 {
+	const int sig_bits = NUM_BITS(value) - 1;
+	const mcp_long_t max = ALL_ONES(sig_bits),
+					min = -max - 1;
+#if !MCP_SYSTEM_TWOS_COMP
+	const mcp_ulong_t sign_bit = ONE_BIT(sig_bits);
+#endif
+
 #if USE_MCP_ASSERT_OVERFLOW
-	assert(value < ALL_ONES(63) && value >= -ALL_ONES(63) - 1);
+	assert(value >= min && value <= max);
 #endif
 
 	/* overflow check */
-	if (value > ALL_ONES(63) || value < -ALL_ONES(63) - 1)
+	if (value < min || value > max)
 		return 1;
 
-#if USE_MCP_TWOS_COMP
+#if MCP_SYSTEM_TWOS_COMP
 	return mcg_ulong(buf, value);
 #else
+	/* pack two's complement */
 	if (value < 0)
-		return mcg_ubyte(buf, 0x8000000000000000 | (mcp_ulong_t)-(value + 1));
-	return mcg_ubyte(buf, value);
+		return mcg_ulong(buf, sign_bit | (mcp_ulong_t)(sign_bit + value));
+
+	return mcg_ulong(buf, value);
 #endif
 }
 
 int mcg_bool(struct fbuf *buf, mcp_bool_t value)
 {
-	return mcg_byte(buf, !!value);
+	return mcg_ubyte(buf, !!value);
 }
 
 int mcg_float(struct fbuf *buf, float x)
 {
 #if USE_UNSAFE_MCP_FLOAT
 	union {
-		mcp_uint_t i;
-	    float f;
+		mcp_uint_float_t i;
+		double f;
 	} value;
-	assert(sizeof(mcp_uint_t) == sizeof(float));
+	assert(sizeof(mcp_uint_float_t) == sizeof(float));
+	/* WARNING: type-punning, your platform may not like this. */
 	value.f = x;
 	return mcg_uint(buf, value.i);
 #else
@@ -317,7 +371,7 @@ int mcg_float(struct fbuf *buf, float x)
 	double significand;
 	if (x < 0) {
 		x = -x;
-		result |= 0x80000000;
+		result |= ONE_BIT(31);
 	}
 	significand = frexp(x, &exp);
 	exp -= 1;
@@ -325,28 +379,29 @@ int mcg_float(struct fbuf *buf, float x)
 		exp = -exp - 1;
 	exp &= ALL_ONES(8);
 	result |= exp << 23;
-	result |= (mcp_uint_t)(significand * (1 << 24)) & ALL_ONES(23);
+	result |= (mcp_uint_t)(significand * ONE_BIT(24)) & ALL_ONES(23);
 	return mcg_uint(buf, result);
 #endif
 }
 
 int mcg_double(struct fbuf *buf, double x)
 {
-#if USE_UNSAFE_MCP_FLOAT
+#if MCP_SYSTEM_IEEE754_FLOAT
 	union {
-		mcp_ulong_t i;
+		mcp_uint_double_t i;
 		double f;
 	} value;
-	assert(sizeof(mcp_uint_t) == sizeof(float));
+	assert(sizeof(mcp_uint_double_t) == sizeof(double));
+	/* WARNING: type-punning, your platform may not like this. */
 	value.f = x;
-	return mcg_uint(buf, value.i);
+	return mcg_ulong(buf, value.i);
 #else
 	mcp_ulong_t result = 0;
 	int exp;
 	double significand;
 	if (x < 0) {
 		x = -x;
-		result |= 0x8000000000000000;
+		result |= ONE_BIT(63);
 	}
 	significand = frexp(x, &exp);
 	exp -= 1;
@@ -354,7 +409,7 @@ int mcg_double(struct fbuf *buf, double x)
 		exp = -exp - 1;
 	exp &= ALL_ONES(11);
 	result |= (mcp_ulong_t)exp << 52;
-	result |= (mcp_uint_t)(significand * (1L << 53)) & ALL_ONES(52);
+	result |= (mcp_uint_t)(significand * ONE_BIT(53)) & ALL_ONES(52);
 	return mcg_ulong(buf, result);
 #endif
 }

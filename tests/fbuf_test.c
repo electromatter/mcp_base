@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#undef NDEBUG
 #include <assert.h>
 
 /* keep iterations large enough for a decent chance of catching bugs,
@@ -16,20 +17,79 @@
 #define RANDOM_ITERATIONS		(10000)
 #define RANDOM_MAX_SIZE			(1000)
 
-static int simple_test(void)
+static void simple_test(void)
 {
 	struct fbuf buf;
 	fbuf_init(&buf, FBUF_MAX);
 	
-	fbuf_wptr(&buf, 10000);
-	fbuf_produce(&buf, 10000);
+	/* produce simple test */
+	assert(fbuf_wptr(&buf, 1024));
+	assert(fbuf_wavail(&buf) >= 1024);
+	assert(fbuf_avail(&buf) == 0);
+	fbuf_produce(&buf, 1024);
+	assert(fbuf_avail(&buf) == 1024);
+	
+	/* clear test */
+	fbuf_clear(&buf);
+	assert(fbuf_avail(&buf) == 0);
+	
+	/* free test */
+	fbuf_free(&buf);
+	assert(fbuf_avail(&buf) == 0);
+	assert(fbuf_wavail(&buf) == 0);
+	assert(buf.size == 0);
+	assert(buf.base == NULL);
+	
+	/* compact test */
+	assert(fbuf_wptr(&buf, 1024));
+	assert(fbuf_wavail(&buf) >= 1024);
+	assert(fbuf_avail(&buf) == 0);
+	fbuf_produce(&buf, 1024);
+	assert(fbuf_avail(&buf) == 1024);
+	
+	fbuf_compact(&buf);
+	assert(fbuf_avail(&buf) == 1024);
+	
+	fbuf_consume(&buf, 512);
+	assert(fbuf_avail(&buf) == 512);
+	
+	fbuf_compact(&buf);
+	assert(buf.start == 0);
+	assert(fbuf_avail(&buf) == 512);
+	
+	fbuf_consume(&buf, 256);
+	assert(fbuf_avail(&buf) == 256);
+	
+	fbuf_consume(&buf, 256);
+	assert(buf.start == 0);
+	assert(fbuf_avail(&buf) == 0);
+	
+	buf.max_size = buf.size;
+	
+	/* produce consume tests */
+	fbuf_produce(&buf, 512);
+	assert(buf.start == 0);
+	assert(buf.end == 512);
+	
+	fbuf_consume(&buf, 256);
+	assert(buf.start == 256);
+	assert(buf.end == 512);
+	
+	fbuf_produce(&buf, fbuf_wavail(&buf));
+	assert(fbuf_wavail(&buf) == 0);
+	assert(buf.start == 256);
+	assert(buf.end == buf.size);
+	
+	fbuf_consume(&buf, fbuf_avail(&buf));
+	assert(fbuf_avail(&buf) == 0);
+	assert(fbuf_wavail(&buf) == buf.size);
+	assert(buf.start == 0);
+	assert(buf.end == 0);
 	
 	fbuf_free(&buf);
-	
-	return 0;
 }
 
-static int random_test(void)
+static void random_test(void)
 {
 	struct fbuf buf = FBUF_INITIALIZER;
 	const unsigned char *base;
@@ -43,17 +103,14 @@ static int random_test(void)
 		/* pick a random block size */
 		size = rand() % RANDOM_MAX_SIZE;
 		wbase = fbuf_wptr(&buf, size);
-		if (wbase == NULL) {
-			assert(0);
-			return 1;
-		}
+		assert(wbase);
 		
 		/* write the pattern: 1, 2, 3, ... 255, 1, 2 ... */
 		for (j = 0; j < size; j++)
 			wbase[j] = (j + end) & 0xff;
-		end += size;
-		fbuf_produce(&buf, size);
 		valid += size;
+		end = (end + size) & 0xff;
+		fbuf_produce(&buf, size);
 		
 		/* consume a random block size */
 		size = rand() % RANDOM_MAX_SIZE;
@@ -61,37 +118,27 @@ static int random_test(void)
 			size = valid;
 		fbuf_consume(&buf, size);
 		valid -= size;
-		start += size;
+		start = (start + size) & 0xff;
 	}
 	
 	/* verify that the buffer contains the correct data */
 	assert(valid == fbuf_avail(&buf));
 	base = fbuf_ptr(&buf);
-	for (j = 0; j < size; j++) {
-		if (base[j] != ((j + start) & 0xff)) {
-			assert(0);
-			return 1;
-		}
-	}
+	for (j = 0; j < valid; j++)
+		assert(base[j] == ((j + start) & 0xff));
 	
 	/* try to compact it, and reverify */
 	fbuf_compact(&buf);
 	assert(valid == fbuf_avail(&buf));
 	assert(buf.start == 0);
 	base = fbuf_ptr(&buf);
-	for (j = 0; j < size; j++) {
-		if (base[j] != ((j + start) & 0xff)) {
-			assert(0);
-			return 1;
-		}
-	}
+	for (j = 0; j < valid; j++)
+		assert(base[j] == ((j + start) & 0xff));
 	
 	fbuf_free(&buf);
-	
-	return 0;
 }
 
-static int limit_test(void)
+static void limit_test(void)
 {
 	struct fbuf buf;
 	size_t request, ret;
@@ -100,51 +147,44 @@ static int limit_test(void)
 	/* try expanding the buffer a few times */
 	request = 1000;
 	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret < request) {
-		assert(0);
-		return 1;
-	}
+	assert(ret == fbuf_wavail(&buf) && ret >= request);
 	
 	request = 10000;
 	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret < request) {
-		assert(0);
-		return 1;
-	}
+	assert(ret == fbuf_wavail(&buf) && ret >= request);
 	
 	request = 16384;
 	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret < request) {
-		assert(0);
-		return 1;
-	}
+	assert(ret == fbuf_wavail(&buf) && ret >= request);
 	
 	/* now try one that should fail */
 	request = 100000;
 	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret >= request) {
-		assert(0);
-		return 1;
-	}
+	assert(ret == fbuf_wavail(&buf) && ret < request);
+	
+	/* this should succeed */
+	request = 16700;
+	ret = fbuf_expand(&buf, request);
+	assert(ret == fbuf_wavail(&buf) && ret >= request);
+	
+	/* and up to the limit */
+	request = 16800;
+	ret = fbuf_expand(&buf, request);
+	assert(ret == fbuf_wavail(&buf) && ret >= request);
 	
 	/* lift the limit */
 	buf.max_size = FBUF_MAX;
 	
 	/* see what happens when we try something that should overflow */
-	request = FBUF_MAX;
+	request = FBUF_MAX >> 2;
 	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret >= request) {
-		assert(0);
-		return 1;
-	}
+	assert(ret == fbuf_wavail(&buf) && ret < request);
 	
 	fbuf_free(&buf);
-	
-	return 0;
 }
 
 #define NUM_TESTS		(3)
-static int (*tests[NUM_TESTS])(void) = {simple_test,
+static void (*tests[NUM_TESTS])(void) = {simple_test,
 										random_test,
 										limit_test};
 static const char *test_names[NUM_TESTS] = {"simple_test",
@@ -159,7 +199,8 @@ static int do_test(int test_num)
 		return print_usage();
 	fprintf(stderr, "starting subtest: %s\n", test_names[test_num]);
 	fflush(stderr);
-	return tests[test_num]();
+	tests[test_num]();
+	return 0;
 }
 
 static int print_usage()

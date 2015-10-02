@@ -1,155 +1,109 @@
 #include <stdlib.h>
 #include "fbuf.h"
+#include "mcp_types.h"
+#include "mcp.h"
 
 #include <stdio.h>
 #include <time.h>
+#undef NDEBUG
 #include <assert.h>
+#include <string.h>
 
-/* keep iterations large enough for a decent chance of catching bugs,
- * but small enough to fit on a machine without causing overflows 
- *
- * the maximum ammount of memory that random_test can take is
- * 	RANDOM_ITERATIONS * RANDOM_MAX_SIZE
- * 
- * Keep the above product under the limit of the int type on your system.
- */
-#define RANDOM_ITERATIONS		(10000)
-#define RANDOM_MAX_SIZE			(1000)
+static void hexdump(const void *data, size_t size)
+{
+	const char hex[16] = "0123456789abcdef";
+	size_t offset;
+	const unsigned char *ptr = data;
+	
+	/* works fine if the offset is less than 6 hex digits */
+	
+	for (offset = 0; offset < size; offset++) {
+		if (offset > 0 && (offset & 0xf) == 0)
+			fputc('\n', stderr);
+		
+		if ((offset & 0xf) == 0) {
+			fputc(hex[(offset >> 20) & 0xf], stderr);
+			fputc(hex[(offset >> 16) & 0xf], stderr);
+			fputc(hex[(offset >> 12) & 0xf], stderr);
+			fputc(hex[(offset >> 8) & 0xf], stderr);
+			fputc(hex[(offset >> 4) & 0xf], stderr);
+			fputc(hex[offset & 0xf], stderr);
+			
+			fputc(' ', stderr);
+			fputc(' ', stderr);
+		}
+		
+		fputc(hex[(ptr[offset] >> 4) & 0xf], stderr);
+		fputc(hex[ptr[offset] & 0xf], stderr);
+		fputc(' ', stderr);
+		
+		if ((offset & 0xf) == 7)
+			fputc(' ', stderr);
+	}
+	if (size > 0)
+		fputc('\n', stderr);
+	
+	fputc(hex[(offset >> 20) & 0xf], stderr);
+	fputc(hex[(offset >> 16) & 0xf], stderr);
+	fputc(hex[(offset >> 12) & 0xf], stderr);
+	fputc(hex[(offset >> 8) & 0xf], stderr);
+	fputc(hex[(offset >> 4) & 0xf], stderr);
+	fputc(hex[offset & 0xf], stderr);
+	fputc('\n', stderr);
+	
+	fflush(stderr);
+}
 
 static int simple_test(void)
 {
-	struct fbuf buf;
-	fbuf_init(&buf, FBUF_MAX);
-	
-	fbuf_wptr(&buf, 10000);
-	fbuf_produce(&buf, 10000);
-	
-	fbuf_free(&buf);
-	
-	return 0;
-}
-
-static int random_test(void)
-{
 	struct fbuf buf = FBUF_INITIALIZER;
-	const unsigned char *base;
-	unsigned char *wbase;
-	int i, j, size, valid = 0, start = 0, end = 0;
+	int err = 0;
+	const unsigned char expected[] = {0x01, 0x02, 0x03, 0x04, 0x05,
+										0x06, 0x07, 0x08, 0x09, 0x10,
+										0x11, 0x12, 0x13, 0x14, 0x15,
+										0x01, 0x00, 0xff, 0xff, 0xfe,
+										0xff, 0xff, 0xff, 0xfd, 0xff,
+										0xff, 0xff, 0xff, 0xff, 0xff,
+										0xff, 0xfc};
 	
-	/* seed the rng */
-	srand(time(NULL));
+	/* write out some tests */
+	err |= mcg_ubyte(&buf, 0x01);
+	err |= mcg_ushort(&buf, 0x0203);
+	err |= mcg_uint(&buf, 0x04050607);
+	err |= mcg_ulong(&buf, 0x0809101112131415);
+	err |= mcg_bool(&buf, 12);
+	err |= mcg_bool(&buf, 0);
+	err |= mcg_byte(&buf, -1);
+	err |= mcg_short(&buf, -2);
+	err |= mcg_int(&buf, -3);
+	err |= mcg_long(&buf, -4);
 	
-	for (i = 0; i < RANDOM_ITERATIONS; i++) {
-		/* pick a random block size */
-		size = rand() % RANDOM_MAX_SIZE;
-		wbase = fbuf_wptr(&buf, size);
-		if (wbase == NULL) {
-			assert(0);
-			return 1;
-		}
-		
-		/* write the pattern: 1, 2, 3, ... 255, 1, 2 ... */
-		for (j = 0; j < size; j++)
-			wbase[j] = (j + end) & 0xff;
-		end += size;
-		fbuf_produce(&buf, size);
-		valid += size;
-		
-		/* consume a random block size */
-		size = rand() % RANDOM_MAX_SIZE;
-		if (size > valid)
-			size = valid;
-		fbuf_consume(&buf, size);
-		valid -= size;
-		start += size;
-	}
+	/* TODO: edge cases */
+	/* TODO: raw, bytes, raw_copy, bytes_copy */
+	/* TODO: full buffer */
 	
-	/* verify that the buffer contains the correct data */
-	assert(valid == fbuf_avail(&buf));
-	base = fbuf_ptr(&buf);
-	for (j = 0; j < size; j++) {
-		if (base[j] != ((j + start) & 0xff)) {
-			assert(0);
-			return 1;
-		}
-	}
+	/* print out the data for debugging */
+	hexdump(fbuf_ptr(&buf), fbuf_avail(&buf));
 	
-	/* try to compact it, and reverify */
-	fbuf_compact(&buf);
-	assert(valid == fbuf_avail(&buf));
-	assert(buf.start == 0);
-	base = fbuf_ptr(&buf);
-	for (j = 0; j < size; j++) {
-		if (base[j] != ((j + start) & 0xff)) {
-			assert(0);
-			return 1;
-		}
-	}
+	/* check that the operatoin succeeded without error*/
+	assert(err == 0);
 	
-	fbuf_free(&buf);
+	/* test if the output is the same as what we expected */
+	assert(fbuf_avail(&buf) == sizeof(expected));
+	assert(memcmp(fbuf_ptr(&buf), expected, sizeof(expected)) == 0);
 	
 	return 0;
 }
 
-static int limit_test(void)
+static int float_test(void)
 {
-	struct fbuf buf;
-	size_t request, ret;
-	fbuf_init(&buf, 16800);
-	
-	/* try expanding the buffer a few times */
-	request = 1000;
-	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret < request) {
-		assert(0);
-		return 1;
-	}
-	
-	request = 10000;
-	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret < request) {
-		assert(0);
-		return 1;
-	}
-	
-	request = 16384;
-	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret < request) {
-		assert(0);
-		return 1;
-	}
-	
-	/* now try one that should fail */
-	request = 100000;
-	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret >= request) {
-		assert(0);
-		return 1;
-	}
-	
-	/* lift the limit */
-	buf.max_size = FBUF_MAX;
-	
-	/* see what happens when we try something that should overflow */
-	request = FBUF_MAX;
-	ret = fbuf_expand(&buf, request);
-	if (ret != fbuf_wavail(&buf) || ret >= request) {
-		assert(0);
-		return 1;
-	}
-	
-	fbuf_free(&buf);
-	
+	/* TODO: float test */
 	return 0;
 }
 
-#define NUM_TESTS		(3)
-static int (*tests[NUM_TESTS])(void) = {simple_test,
-										random_test,
-										limit_test};
-static const char *test_names[NUM_TESTS] = {"simple_test",
-											"random_test",
-											"limit_test"};
+#define NUM_TESTS		(2)
+static int (*tests[NUM_TESTS])(void) = {simple_test, float_test};
+static const char *test_names[NUM_TESTS] = {"simple_test", "float_test"};
 
 static int print_usage();
 

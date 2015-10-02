@@ -32,5 +32,7 @@ api documetation... tests... verify mcp_float, mcg_float
 
 splint/clang static
 
-check rounding
+check rounding/nan/inf
+
+remove limitations on varint
 
