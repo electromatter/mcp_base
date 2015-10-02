@@ -68,9 +68,6 @@ mcp_varint_t mcp_varint(struct mcp_parse *buf)
 			final_max = ALL_ONES(max_shift % 7);
 	unsigned int shift = 0;
 
-	/* check the configuration */
-	assert(NUM_BITS(ret) >= num_bits);
-
 	/* pass errors */
 	if (!mcp_ok(buf))
 		return ret;
@@ -109,9 +106,6 @@ mcp_varlong_t mcp_varlong(struct mcp_parse *buf)
 			max_shift = num_bits - 7,
 			final_max = ALL_ONES(max_shift % 7);
 	unsigned int shift = 0;
-
-	/* check the configuration */
-	assert(NUM_BITS(ret) >= num_bits);
 
 	/* pass errors */
 	if (!mcp_ok(buf))
@@ -252,7 +246,7 @@ mcp_byte_t mcp_byte(struct mcp_parse *buf)
 	mcp_ubyte_t value = mcp_ubyte(buf);
 	
 	/* check the sign bit */
-	if (value & ONE_BIT(NUM_BITS(value) - 1))
+	if (value & ONE_BIT(7))
 		return -(value ^ ALL_ONES(8)) - 1;
 	
 	return value;
@@ -263,7 +257,7 @@ mcp_short_t mcp_short(struct mcp_parse *buf)
 	mcp_ushort_t value = mcp_ushort(buf);
 	
 	/* check the sign bit */
-	if (value & ONE_BIT(NUM_BITS(value) - 1))
+	if (value & ONE_BIT(15))
 		return -(value ^ ALL_ONES(16)) - 1;
 	
 	return value;
@@ -274,7 +268,7 @@ mcp_int_t mcp_int(struct mcp_parse *buf)
 	mcp_uint_t value = mcp_uint(buf);
 	
 	/* check the sign bit */
-	if (value & ONE_BIT(NUM_BITS(value) - 1))
+	if (value & ONE_BIT(31))
 		return -(value ^ ALL_ONES(32)) - 1;
 	
 	return value;
@@ -285,7 +279,7 @@ mcp_long_t mcp_long(struct mcp_parse *buf)
 	mcp_ulong_t value = mcp_ulong(buf);
 	
 	/* check the sign bit */
-	if (value & ONE_BIT(NUM_BITS(value) - 1))
+	if (value & ONE_BIT(63))
 		return -(value ^ ALL_ONES(64)) - 1;
 	
 	return value;

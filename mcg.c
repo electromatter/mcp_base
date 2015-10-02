@@ -7,11 +7,9 @@
 
 #include <assert.h>
 
-/* returns the number of bits in an integer type */
-#define NUM_BITS(type)          (8 * sizeof(type))
 /* returns an integer with a number of ones set starting from the lsb */
 #define ALL_ONES(num_bits)      ((~(mcp_ulong_t)0) >>				\
-									(NUM_BITS(mcp_ulong_t) - (num_bits)))
+									(8 * sizeof(mcp_ulong_t) - (num_bits)))
 /* returns a long with bit number bit_num set, counting from the lsb */
 #define ONE_BIT(bit_num)		(((mcp_ulong_t)1) << (bit_num))
 
@@ -102,7 +100,7 @@ int mcg_varlong(struct fbuf *buf, mcp_varlong_t value)
 
 int mcg_svarint(struct fbuf *buf, mcp_svarint_t value)
 {
-	const int sig_bits = NUM_BITS(value) - 1;
+	const int sig_bits = 31;
 	const mcp_svarint_t max = ALL_ONES(sig_bits),
 					min = -max - 1;
 	mcp_varint_t packed = (mcp_varint_t)value << 2;
@@ -124,7 +122,7 @@ int mcg_svarint(struct fbuf *buf, mcp_svarint_t value)
 
 int mcg_svarlong(struct fbuf *buf, mcp_svarlong_t value)
 {
-	const int sig_bits = NUM_BITS(value) - 1;
+	const int sig_bits = 63;
 	const mcp_svarlong_t max = ALL_ONES(sig_bits),
 					min = -max - 1;
 	mcp_varlong_t packed = (mcp_varint_t)value << 2;
@@ -239,11 +237,10 @@ int mcg_ulong(struct fbuf *buf, mcp_ulong_t value)
 
 int mcg_byte(struct fbuf *buf, mcp_byte_t value)
 {
-	const int sig_bits = NUM_BITS(value) - 1;
-	const mcp_byte_t max = ALL_ONES(sig_bits),
+	const mcp_byte_t max = ALL_ONES(7),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_ubyte_t sign_bit = ONE_BIT(sig_bits);
+	const mcp_ubyte_t sign_bit = ONE_BIT(7);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
@@ -267,11 +264,10 @@ int mcg_byte(struct fbuf *buf, mcp_byte_t value)
 
 int mcg_short(struct fbuf *buf, mcp_short_t value)
 {
-	const int sig_bits = NUM_BITS(value) - 1;
-	const mcp_short_t max = ALL_ONES(sig_bits),
+	const mcp_short_t max = ALL_ONES(15),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_ushort_t sign_bit = ONE_BIT(sig_bits);
+	const mcp_ushort_t sign_bit = ONE_BIT(15);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
@@ -295,11 +291,10 @@ int mcg_short(struct fbuf *buf, mcp_short_t value)
 
 int mcg_int(struct fbuf *buf, mcp_int_t value)
 {
-	const int sig_bits = NUM_BITS(value) - 1;
-	const mcp_int_t max = ALL_ONES(sig_bits),
+	const mcp_int_t max = ALL_ONES(31),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_uint_t sign_bit = ONE_BIT(sig_bits);
+	const mcp_uint_t sign_bit = ONE_BIT(31);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
@@ -323,11 +318,10 @@ int mcg_int(struct fbuf *buf, mcp_int_t value)
 
 int mcg_long(struct fbuf *buf, mcp_long_t value)
 {
-	const int sig_bits = NUM_BITS(value) - 1;
-	const mcp_long_t max = ALL_ONES(sig_bits),
+	const mcp_long_t max = ALL_ONES(63),
 					min = -max - 1;
 #if !MCP_SYSTEM_TWOS_COMP
-	const mcp_ulong_t sign_bit = ONE_BIT(sig_bits);
+	const mcp_ulong_t sign_bit = ONE_BIT(63);
 #endif
 
 #if USE_MCP_ASSERT_OVERFLOW
