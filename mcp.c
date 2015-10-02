@@ -339,4 +339,3 @@ double mcp_double(struct mcp_parse *buf)
 	return ldexp(significand, exponent - 52);
 #endif
 }
-

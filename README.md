@@ -35,4 +35,3 @@ splint/clang static
 check rounding/nan/inf
 
 remove limitations on varint
-

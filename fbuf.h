@@ -57,4 +57,3 @@ void fbuf_compact(struct fbuf *buf);
 /* copies data into the buffer
  * returns zero if there was not enough space */
 size_t fbuf_copy(struct fbuf *dest, const void *src, size_t size);
-

@@ -122,4 +122,3 @@ int mcg_bool(struct fbuf *buf, mcp_bool_t value);
 
 int mcg_float(struct fbuf *buf, float value);
 int mcg_double(struct fbuf *buf, double value);
-

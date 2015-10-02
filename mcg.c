@@ -413,4 +413,3 @@ int mcg_double(struct fbuf *buf, double x)
 	return mcg_ulong(buf, result);
 #endif
 }
-

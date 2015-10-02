@@ -162,4 +162,3 @@ size_t fbuf_copy(struct fbuf *dest, const void *src, size_t size)
 	fbuf_produce(dest, size);
 	return size;
 }
-
