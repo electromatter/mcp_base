@@ -11,5 +11,5 @@ find_program(CTEST_MEMORYCHECK_COMMAND valgrind)
 set(CTEST_MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
 
 add_test(NAME fbuf_test COMMAND fbuf_test 0 1 2)
-add_test(NAME mcp_test COMMAND mcp_test)
-add_test(NAME mcg_test COMMAND mcg_test)
+add_test(NAME mcp_test COMMAND mcp_test 0 1)
+add_test(NAME mcg_test COMMAND mcg_test 0 1 2)

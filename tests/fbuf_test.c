@@ -24,7 +24,7 @@
  * 
  * Keep the above product under the limit of the int type on your system.
  */
-#define RANDOM_ITERATIONS		(10000)
+#define RANDOM_ITERATIONS		(100000)
 #define RANDOM_MAX_SIZE			(1000)
 
 static void simple_test(void)
@@ -115,7 +115,7 @@ static void random_test(void)
 		wbase = fbuf_wptr(&buf, size);
 		assert(wbase);
 		
-		/* write the pattern: 1, 2, 3, ... 255, 1, 2 ... */
+		/* write the pattern: 0, 1, 2, ... 255, 0, 1, 2 ... */
 		for (j = 0; j < size; j++)
 			wbase[j] = (j + end) & 0xff;
 		valid += size;
@@ -183,12 +183,39 @@ static void limit_test(void)
 	assert(ret == fbuf_wavail(&buf) && ret >= request);
 	
 	/* lift the limit */
-	buf.max_size = FBUF_MAX;
+	assert(!fbuf_shrink(&buf, FBUF_MAX));
+	assert(buf.max_size == FBUF_MAX);
 	
 	/* see what happens when we try something that should overflow */
-	request = FBUF_MAX >> 2;
+	request = FBUF_MAX >> 2; /* to avoid a valgrind warning of malloc(-1);*/
 	ret = fbuf_expand(&buf, request);
 	assert(ret == fbuf_wavail(&buf) && ret < request);
+	
+	/* put some garbage data in the fbuf */
+	fbuf_produce(&buf, fbuf_wavail(&buf));
+	
+	/* shrink to less than what is waiting should fail */
+	assert(fbuf_shrink(&buf, 0));
+	assert(buf.max_size == FBUF_MAX);
+	
+	/* shrink down to larger should succeed */
+	assert(!fbuf_shrink(&buf, 18000));
+	assert(buf.max_size == 18000);
+	
+	/* shrink down to exactly what is waiting should succeed */
+	assert(!fbuf_shrink(&buf, 16800));
+	assert(buf.max_size == 16800);
+	
+	/* clear out that data so we can try some more shrinks */
+	fbuf_clear(&buf);
+	
+	/* shrink down to exactly what is waiting should succeed */
+	assert(!fbuf_shrink(&buf, 0));
+	assert(buf.max_size == 0);
+	
+	/* shrink back to default should succeed */
+	assert(!fbuf_shrink(&buf, FBUF_MAX));
+	assert(buf.max_size == FBUF_MAX);
 	
 	fbuf_free(&buf);
 }

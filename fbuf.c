@@ -170,6 +170,15 @@ int fbuf_shrink(struct fbuf *buf, size_t new_max)
 		buf->max_size = new_max;
 		return 0;
 	}
+	
+	/* avoid calling realloc with size=0 */
+	if (new_max == 0) {
+		free(buf->base);
+		buf->base = NULL;
+		buf->size = 0;
+		buf->max_size = 0;
+		return 0;
+	}
 
 	/* compact and realloc */
 	fbuf_compact(buf);

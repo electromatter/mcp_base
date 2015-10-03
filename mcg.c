@@ -184,7 +184,7 @@ int mcg_float(struct fbuf *buf, float x)
 {
 	union {
 		uint32_t i;
-		double f;
+		float f;
 	} value;
 
 	/* verify our assumption that it is safe to type-pun float to uint32_t */

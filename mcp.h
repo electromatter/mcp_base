@@ -46,7 +46,7 @@ typedef int64_t mcp_svarlong_t;
 /* returns true if there are no errors */
 static inline int mcp_ok(struct mcp_parse *buf)
 {
-	return buf->error != MCP_EOK;
+	return buf->error == MCP_EOK;
 }
 
 /* returns the error */
@@ -108,7 +108,7 @@ const void *mcp_bytes(struct mcp_parse *buf, size_t *size);
 size_t mcp_copy_bytes(void *dest, struct mcp_parse *buf, size_t max_size);
 /* same as mcp_copy_bytes, except the return value and max_size include
  * the final NUL-terminator. */
-size_t mcp_copy_string(char *dest, size_t mcp_parse *buf, size_t max_size);
+size_t mcp_copy_string(char *dest, struct mcp_parse *buf, size_t max_size);
 
 uint8_t mcp_ubyte(struct mcp_parse *buf);
 uint16_t mcp_ushort(struct mcp_parse *buf);

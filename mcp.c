@@ -121,7 +121,7 @@ mcp_varint_t mcp_varint(struct mcp_parse *buf)
 mcp_varlong_t mcp_varlong(struct mcp_parse *buf)
 {
 	const unsigned char *base = mcp_ptr(buf);
-	mcp_varint_t ret = 0;
+	mcp_varlong_t ret = 0;
 	int offset = 0;
 
 	/* precondition */
@@ -145,7 +145,7 @@ mcp_varlong_t mcp_varlong(struct mcp_parse *buf)
 		}
 
 		/* decode one byte */
-		ret |= (mcp_varint_t)(base[offset] & 0x7f) << (offset * 7);
+		ret |= (mcp_varlong_t)(base[offset] & 0x7f) << (offset * 7);
 
 		/* continue while the more-data-bit is set */
 	} while (base[offset++] & 0x80);
@@ -213,6 +213,31 @@ size_t mcp_copy_bytes(void *dest, struct mcp_parse *buf, size_t max_size)
 
 	/* return the actual size */
 	return size;
+}
+
+size_t mcp_copy_string(char *dest, struct mcp_parse *buf, size_t max_size)
+{
+	size_t size;
+	struct mcp_parse saved_buf = *buf;
+	const void *value = mcp_bytes(buf, &size);
+
+	/* pass errors */
+	if (!mcp_ok(buf))
+		return 0;
+
+	/* bounds check */
+	if (size > max_size) {
+		/* roll-back the changes and return the actual size */
+		*buf = saved_buf;
+		return size + 1;
+	}
+
+	/* copy out the bytes */
+	memcpy(dest, value, size);
+	dest[size] = 0;
+
+	/* return the actual size */
+	return size + 1;
 }
 
 uint8_t mcp_ubyte(struct mcp_parse *buf)

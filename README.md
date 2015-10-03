@@ -2,7 +2,11 @@
 ---
 A simple library for parsing and packing fundimental types
 for building network protocols. Licensed under the permissive ISC
-license. See the LICENSE file for details.
+license. See the LICENSE file for details. Comments and Improvements
+are welcome.
+
+NOTE: The tests supplied in tests/ do not exaustively test the contracts
+of all of the functions, but they do check for many different errors.
 
 ## System Requirements
 ---
@@ -43,7 +47,7 @@ if (ptr == NULL)
     /* Error: Buffer full. */
 int ret = read(fd, ptr, fbuf_wavail(&buf));
 if (ret <= 0)
-    /* Error: man read (2) */
+    /* Error: see man read (2) */
 fbuf_produce(&buf, ret);
 /* report that we have read ret bytes from fd */
 ```
@@ -130,7 +134,6 @@ Copies `size` bytes from `src` into `dest`, expanding the buffer if necessary.
 If the copy succeeds without error, `fbuf_copy` returns `0`.
 Otherwise, it returns `1` on error.
 
-### mcp.h
 ### mcp.h
 
 ##### Fundimental Types
