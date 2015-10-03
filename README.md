@@ -198,6 +198,10 @@ an error in decoding the object, an error is asserted on `buf`
 and a place-holder value is returned (typically zero) and the object
 is not consumed.
 
+WARNING: Pointers returned by this function with the types `raw` and `bytes`
+are only valid as long as base is valid. mcp_copy_*type* does not have this
+restriction, but is slightly less efficent due to a copy.
+
 NOTE: For an object to be consumed, the parser simply advances the pointer past the object.
 
 ###### `int mcg_*type*(struct fbuf *buf, *type* value);`
