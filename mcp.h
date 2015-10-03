@@ -1,3 +1,12 @@
+/* mcp.h
+ *
+ * Copyright (c) 2015 Eric Chai <electromatter@gmail.com>
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the ISC license. See the LICENSE file for details.
+ */
+
 #ifndef MCP_H
 #define MCP_H
 
@@ -6,10 +15,6 @@
 
 /* for (u)int{8,16,32,64}_t*/
 #include <stdint.h>
-
-#ifndef MCG_ASSERT_OVERFLOW
-# define MCG_ASSERT_OVERFLOW		0
-#endif
 
 /* for compatibility with varint28 */
 #ifndef MCG_BYTES_MAX_SIZE
@@ -137,6 +142,7 @@ int mcg_svarint(struct fbuf *buf, mcp_svarint_t value);
 int mcg_svarlong(struct fbuf *buf, mcp_svarlong_t value);
 
 int mcg_bytes(struct fbuf *buf, const void *value, size_t size);
+int mcg_string(struct fbuf *buf, const char *value);
 
 int mcg_ubyte(struct fbuf *buf, uint8_t value);
 int mcg_ushort(struct fbuf *buf, uint16_t value);

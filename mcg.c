@@ -1,7 +1,17 @@
+/* mcg.c - Implemenation mcp pack functions
+ *
+ * Copyright (c) 2015 Eric Chai <electromatter@gmail.com>
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the ISC license. See the LICENSE file for details.
+ */
+
 #include "fbuf.h"
 #include "mcp.h"
 
 #include <assert.h>
+#include <string.h>
 
 int mcg_raw(struct fbuf *buf, const void *data, size_t size)
 {
@@ -94,6 +104,11 @@ int mcg_bytes(struct fbuf *buf, const void *value, size_t size)
 
 	/* copy data */
 	return mcg_raw(buf, value, size);
+}
+
+int mcg_string(struct fbuf *buf, const char *value)
+{
+	return mcg_bytes(buf, value, strlen(value));
 }
 
 int mcg_ubyte(struct fbuf *buf, uint8_t value)

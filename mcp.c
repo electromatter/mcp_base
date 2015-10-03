@@ -1,3 +1,12 @@
+/* mcp.c - Implementation of the mcp parse functions
+ *
+ * Copyright (c) 2015 Eric Chai <electromatter@gmail.com>
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the ISC license. See the LICENSE file for details.
+ */
+
 #include "mcp.h"
 
 /* for memcpy */

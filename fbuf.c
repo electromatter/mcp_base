@@ -1,3 +1,12 @@
+/* fbuf.c
+ *
+ * Copyright (c) 2015 Eric Chai <electromatter@gmail.com>
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the ISC license. See the LICENSE file for details.
+ */
+
 #include <stdlib.h>
 #include "fbuf.h"
 
@@ -5,7 +14,7 @@
 #include <assert.h>
 
 /* verify fbuf invariants */
-static inline void fbuf_assert(struct fbuf *buf)
+static inline void assert_valid_fbuf(struct fbuf *buf)
 {
 	/* valid pointer */
 	assert(buf);
@@ -24,7 +33,7 @@ static inline void fbuf_assert(struct fbuf *buf)
 
 void fbuf_free(struct fbuf *buf)
 {
-	fbuf_assert(buf);
+	assert_valid_fbuf(buf);
 
 	/* if we have a non-zero object then free it's buffer */
 	if (buf->base)
@@ -48,7 +57,7 @@ unsigned char *fbuf_wptr(struct fbuf *buf, size_t require)
 
 void fbuf_produce(struct fbuf *buf, size_t sz)
 {
-	fbuf_assert(buf);
+	assert_valid_fbuf(buf);
 
 	/* overflow check */
 	assert(sz <= buf->size - buf->end);
@@ -58,7 +67,7 @@ void fbuf_produce(struct fbuf *buf, size_t sz)
 
 void fbuf_consume(struct fbuf *buf, size_t sz)
 {
-	fbuf_assert(buf);
+	assert_valid_fbuf(buf);
 
 	/* overflow check */
 	assert(sz <= fbuf_avail(buf));
@@ -70,10 +79,9 @@ void fbuf_consume(struct fbuf *buf, size_t sz)
 		fbuf_clear(buf);
 }
 
-static size_t next_size(size_t size, size_t required_size, size_t max_size)
+static size_t next_size(size_t required_size, size_t max_size)
 {
-	if (size == 0)
-		size = FBUF_INITIAL_SIZE;
+	size_t size = FBUF_INITIAL_SIZE;
 
 	/* exponentialy expand, with overflow check */
 	while (size < required_size && size < FBUF_MAX / FBUF_EXPAND_COEFF)
@@ -94,7 +102,7 @@ size_t fbuf_expand(struct fbuf *buf, size_t requested_size)
 {
 	size_t new_size;
 	unsigned char *new_base;
-	fbuf_assert(buf);
+	assert_valid_fbuf(buf);
 
 	/* check if we can already satisfy this request */
 	if (fbuf_wavail(buf) >= requested_size)
@@ -114,7 +122,7 @@ size_t fbuf_expand(struct fbuf *buf, size_t requested_size)
 	}
 
 	/* allocate the new buffer */
-	new_size = next_size(buf->size, requested_size, buf->max_size);
+	new_size = next_size(requested_size, buf->max_size);
 	new_base = malloc(new_size);
 
 	/* check if malloc failed*/
@@ -138,7 +146,7 @@ size_t fbuf_expand(struct fbuf *buf, size_t requested_size)
 
 void fbuf_compact(struct fbuf *buf)
 {
-	fbuf_assert(buf);
+	assert_valid_fbuf(buf);
 
 	/* rotate the buffer so that base points to the begining */
 	memmove(buf->base, fbuf_ptr(buf), fbuf_avail(buf));
@@ -146,6 +154,36 @@ void fbuf_compact(struct fbuf *buf)
 	/* update the pointers */
 	buf->end -= buf->start;
 	buf->start = 0;
+}
+
+int fbuf_shrink(struct fbuf *buf, size_t new_max)
+{
+	void *new_base;
+	assert_valid_fbuf(buf);
+
+	/* check if new_max can hold the data currently in the buffer */
+	if (fbuf_avail(buf) > new_max)
+		return 1;
+
+	/* check if we need to resize the buffer */
+	if (buf->max_size <= new_max || buf->size <= new_max) {
+		buf->max_size = new_max;
+		return 0;
+	}
+
+	/* compact and realloc */
+	fbuf_compact(buf);
+	new_base = realloc(buf->base, new_max);
+
+	/* failed to realloc, roll-back changes */
+	if (new_base == NULL)
+		return 1;
+
+	/* update pointers */
+	buf->base = new_base;
+	buf->size = new_max;
+	buf->max_size = new_max;
+	return 0;
 }
 
 size_t fbuf_copy(struct fbuf *dest, const void *src, size_t size)

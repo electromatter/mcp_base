@@ -1,3 +1,12 @@
+/* fbuf.h
+ *
+ * Copyright (c) 2015 Eric Chai <electromatter@gmail.com>
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the ISC license. See the LICENSE file for details.
+ */
+
 #ifndef FBUF_H
 #define FBUF_H
 
@@ -70,6 +79,13 @@ void fbuf_consume(struct fbuf *buf, size_t sz);
 size_t fbuf_expand(struct fbuf *buf, size_t requested_size);
 /* rotates the buffer so that the read pointer is at the begining. */
 void fbuf_compact(struct fbuf *buf);
+/* resizes the buffer, if possible and changes the maximum size
+ * If the operation succeeds, fbuf_shrink returns 0
+ * Otherwise, it returns 1
+ * fbuf_shrink may fail if there is no memory available,
+ * or if new_max < fbuf_avail(buf)
+ * If fbuf_shrinks, buf is not modified. */
+int fbuf_shrink(struct fbuf *buf, size_t new_max);
 
 /* copies data into the buffer
  * returns zero if there was not enough space */
