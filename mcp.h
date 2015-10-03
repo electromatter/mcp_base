@@ -17,8 +17,8 @@
 #include <stdint.h>
 
 /* for compatibility with varint28 */
-#ifndef MCG_BYTES_MAX_SIZE
-# define MCG_BYTES_MAX_SIZE			(268435455)
+#ifndef MCP_BYTES_MAX_SIZE
+# define MCP_BYTES_MAX_SIZE			(268435455)
 #endif
 
 enum mcp_error {

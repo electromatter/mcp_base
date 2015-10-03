@@ -42,6 +42,11 @@ static inline void fbuf_clear(struct fbuf *buf)
 	buf->end = 0;
 }
 
+
+/* frees any blocks of memory owned by fbuf and resets the
+ * buffer so it can be reused as if it were just initialized with fbuf_init */
+void fbuf_free(struct fbuf *buf);
+
 /* get a pointer to the available data to read */
 static inline const unsigned char *fbuf_ptr(struct fbuf *buf)
 {
@@ -54,20 +59,16 @@ static inline size_t fbuf_avail(struct fbuf *buf)
 	return buf->end - buf->start;
 }
 
+/* returns a pointer to the write end of the buffer with atleast require bytes
+ * available to write to.
+ * or returns null if the we fail to allocate enough space */
+unsigned char *fbuf_wptr(struct fbuf *buf, size_t require);
+
 /* get the size of the available space for writing */
 static inline size_t fbuf_wavail(struct fbuf *buf)
 {
 	return buf->size - buf->end;
 }
-
-/* frees any blocks of memory owned by fbuf and resets the
- * buffer so it can be reused as if it were just initialized with fbuf_init */
-void fbuf_free(struct fbuf *buf);
-
-/* returns a pointer to the write end of the buffer with atleast require bytes
- * available to write to.
- * or returns null if the we fail to allocate enough space */
-unsigned char *fbuf_wptr(struct fbuf *buf, size_t require);
 
 /* advances the write pointer; produces data */
 void fbuf_produce(struct fbuf *buf, size_t sz);
@@ -88,7 +89,7 @@ void fbuf_compact(struct fbuf *buf);
 int fbuf_shrink(struct fbuf *buf, size_t new_max);
 
 /* copies data into the buffer
- * returns zero if there was not enough space */
-size_t fbuf_copy(struct fbuf *dest, const void *src, size_t size);
+ * returns one if there was not enough space */
+int fbuf_copy(struct fbuf *dest, const void *src, size_t size);
 
 #endif

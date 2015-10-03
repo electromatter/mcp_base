@@ -16,10 +16,7 @@
 int mcg_raw(struct fbuf *buf, const void *data, size_t size)
 {
 	/* copy the raw data into the buffer */
-	if (fbuf_copy(buf, data, size) != size)
-		return 1;
-
-	return 0;
+	return fbuf_copy(buf, data, size);
 }
 
 int mcg_varint(struct fbuf *buf, mcp_varint_t value)
@@ -95,11 +92,11 @@ int mcg_svarlong(struct fbuf *buf, mcp_svarlong_t value)
 int mcg_bytes(struct fbuf *buf, const void *value, size_t size)
 {
 	/* overflow check */
-	if (size > MCG_BYTES_MAX_SIZE)
+	if (size > MCP_BYTES_MAX_SIZE)
 		return 1;
 
 	/* write size prefix */
-	if (mcg_varint(buf, size))
+	if (mcg_varlong(buf, size))
 		return 1;
 
 	/* copy data */

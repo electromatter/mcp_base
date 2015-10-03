@@ -1,3 +1,12 @@
+/* mcg_test.c - tests of the mcp pack functions
+ *
+ * Copyright (c) 2015 Eric Chai <electromatter@gmail.com>
+ * All rights reserved.
+ *
+ * This software may be modified and distributed under the terms
+ * of the ISC license. See the LICENSE file for details.
+ */
+
 #include "fbuf.h"
 #include "mcp.h"
 

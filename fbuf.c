@@ -175,29 +175,28 @@ int fbuf_shrink(struct fbuf *buf, size_t new_max)
 	fbuf_compact(buf);
 	new_base = realloc(buf->base, new_max);
 
-	/* failed to realloc, roll-back changes */
-	if (new_base == NULL)
-		return 1;
+	/* check that realloc succeeded */
+	if (new_base != NULL)
+		buf->base = new_base;
 
 	/* update pointers */
-	buf->base = new_base;
 	buf->size = new_max;
 	buf->max_size = new_max;
 	return 0;
 }
 
-size_t fbuf_copy(struct fbuf *dest, const void *src, size_t size)
+int fbuf_copy(struct fbuf *dest, const void *src, size_t size)
 {
 	void *ptr = fbuf_wptr(dest, size);
 
 	/* check that we can actually write this block */
 	if (ptr == NULL)
-		return 0;
+		return 1;
 
 	/* copy the data into the buffer */
 	memcpy(ptr, src, size);
 
 	/* and commit it */
 	fbuf_produce(dest, size);
-	return size;
+	return 0;
 }

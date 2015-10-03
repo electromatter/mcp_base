@@ -171,10 +171,19 @@ mcp_svarlong_t mcp_svarlong(struct mcp_parse *buf)
 
 const void *mcp_bytes(struct mcp_parse *buf, size_t *size)
 {
+	mcp_varlong_t real_size = mcp_varlong(buf);
 	assert(size);
 
+	if (!mcp_ok(buf))
+		return NULL;
+
+	if (real_size > MCP_BYTES_MAX_SIZE) {
+		buf->error = MCP_EOVERFLOW;
+		return NULL;
+	}
+
 	/* read the size prefix */
-	*size = mcp_varint(buf);
+	*size = real_size;
 
 	/* get the data pointer */
 	return mcp_raw(buf, *size);
