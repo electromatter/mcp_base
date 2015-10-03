@@ -1,6 +1,4 @@
-#include <stdlib.h>
 #include "fbuf.h"
-#include "mcp_types.h"
 #include "mcp.h"
 
 #include <stdio.h>

@@ -1,9 +1,8 @@
-/*USAGE:
- * // for NULL
- * #include <stdlib.h>
- *
- * #include "fbuf.h"
- */
+#ifndef FBUF_H
+#define FBUF_H
+
+/* for size_t */
+#include <stdlib.h>
 
 struct fbuf {
 	/* base pointer */
@@ -18,21 +17,39 @@ struct fbuf {
 
 /* use fbuf_init to setup the buffer for first use */
 #define FBUF_INITIALIZER		{NULL, 0, FBUF_MAX, 0, 0}
-#define fbuf_init(buf, max)		do {(buf)->base = NULL;		\
-									(buf)->size = 0;		\
-									(buf)->max_size = (max);	\
-									(buf)->start = 0;		\
-									(buf)->end = 0;} while (0);
+static inline void fbuf_init(struct fbuf *buf, size_t max)
+{
+	buf->base = NULL;
+	buf->size = 0;
+	buf->max_size = max;
+	buf->start = 0;
+	buf->end = 0;
+}
+
 /* clear the contents of the buffer, but keep the memory block */
-#define fbuf_clear(buf)			do {(buf)->start = 0;		\
-									(buf)->end = 0;} while (0);
+static inline void fbuf_clear(struct fbuf *buf)
+{
+	buf->start = 0;
+	buf->end = 0;
+}
+
 /* get a pointer to the available data to read */
-#define fbuf_ptr(buf)			((const unsigned char *)	\
-									&(buf)->base[(buf)->start])
+static inline const unsigned char *fbuf_ptr(struct fbuf *buf)
+{
+	return buf->base + buf->start;
+}
+
 /* get the size of the data waiting to be read */
-#define fbuf_avail(buf)			((buf)->end - (buf)->start)
+static inline size_t fbuf_avail(struct fbuf *buf)
+{
+	return buf->end - buf->start;
+}
+
 /* get the size of the available space for writing */
-#define fbuf_wavail(buf)		((buf)->size - (buf)->end)
+static inline size_t fbuf_wavail(struct fbuf *buf)
+{
+	return buf->size - buf->end;
+}
 
 /* frees any blocks of memory owned by fbuf and resets the
  * buffer so it can be reused as if it were just initialized with fbuf_init */
@@ -57,3 +74,5 @@ void fbuf_compact(struct fbuf *buf);
 /* copies data into the buffer
  * returns zero if there was not enough space */
 size_t fbuf_copy(struct fbuf *dest, const void *src, size_t size);
+
+#endif

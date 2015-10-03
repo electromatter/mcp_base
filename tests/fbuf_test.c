@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "fbuf.h"
 
 #include <stdio.h>
@@ -96,7 +95,7 @@ static void random_test(void)
 	struct fbuf buf = FBUF_INITIALIZER;
 	const unsigned char *base;
 	unsigned char *wbase;
-	int i, j, size, valid = 0, start = 0, end = 0;
+	unsigned int i, j, size, valid = 0, start = 0, end = 0;
 	
 	/* seed the rng */
 	srand(time(NULL));

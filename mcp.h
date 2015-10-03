@@ -1,19 +1,25 @@
-/* USAGE:
+#ifndef MCP_H
+#define MCP_H
 
-// for size_t
+/* for size_t */
 #include <stdlib.h>
 
-// for the fundimental types
-#include "mcp_types.h"
+/* for (u)int{8,16,32,64}_t*/
+#include <stdint.h>
 
-#include "fbuf.h"
-#include "mcp.h"
-*/
+#ifndef MCG_ASSERT_OVERFLOW
+# define MCG_ASSERT_OVERFLOW		0
+#endif
+
+/* for compatibility with varint28 */
+#ifndef MCG_BYTES_MAX_SIZE
+# define MCG_BYTES_MAX_SIZE			(268435455)
+#endif
 
 enum mcp_error {
-	MCP_EOK			= 0,
-	MCP_EOVERRUN	= 1,
-	MCP_EOVERFLOW	= 2
+	MCP_EOK							= 0,
+	MCP_EOVERRUN					= 1,
+	MCP_EOVERFLOW					= 2
 };
 
 struct mcp_parse {
@@ -27,20 +33,44 @@ struct mcp_parse {
 
 struct fbuf;
 
+typedef uint32_t mcp_varint_t;
+typedef uint64_t mcp_varlong_t;
+typedef int32_t mcp_svarint_t;
+typedef int64_t mcp_svarlong_t;
+
 /* returns true if there are no errors */
-#define mcp_ok(buf)						(!(buf)->error)
+static inline int mcp_ok(struct mcp_parse *buf)
+{
+	return buf->error != MCP_EOK;
+}
 
 /* returns the error */
-#define mcp_error(buf)					((buf)->error)
+static inline enum mcp_error mcp_error(struct mcp_parse *buf)
+{
+	return buf->error;
+}
 
 /* initialzes a mcp_parse structure */
-#define mcp_start(buf, base, size)		do {(buf)->base = base;				\
-										(buf)->start = 0; (buf)->end = size;\
-										(buf)->error = MCP_EOK;} while (0)
-#define mcp_start_fbuf(buf, fbuf)		mcp_start((buf),					\
-											fbuf_ptr((fbuf)),				\
-											fbuf_avail((fbuf)))
+static inline void mcp_start(struct mcp_parse *buf, const void *base, size_t size)
+{
+	buf->base = base;
+	buf->start = 0;
+	buf->end = size;
+	buf->error = MCP_EOK;
+}
 
+/* returns true if we have reached the end of the buffer */
+static inline int mcp_eof(struct mcp_parse *buf)
+{
+	return buf->start >= buf->end;
+}
+
+/* returns the number of bytes that we can access from mcp_ptr */
+static inline size_t mcp_avail(struct mcp_parse *buf)
+{
+	return buf->end - buf->start;
+}
+  
 /* parse functions consumes data from buf and returns the parsed value
  *
  * pointer values returned from these functions are zero-copy
@@ -70,19 +100,19 @@ const void *mcp_bytes(struct mcp_parse *buf, size_t *size);
 /* if dest is not large enough to hold the bytes, max_size is set to the
  * size of the bytes object, but buf is not touched, resize dest to hold
  * atleast max_size bytes and call this function again to copy the data */
-void mcp_copy_bytes(void *dest, struct mcp_parse *buf, size_t *max_size);
+size_t mcp_copy_bytes(void *dest, struct mcp_parse *buf, size_t max_size);
 
-mcp_ubyte_t mcp_ubyte(struct mcp_parse *buf);
-mcp_ushort_t mcp_ushort(struct mcp_parse *buf);
-mcp_uint_t mcp_uint(struct mcp_parse *buf);
-mcp_ulong_t mcp_ulong(struct mcp_parse *buf);
+uint8_t mcp_ubyte(struct mcp_parse *buf);
+uint16_t mcp_ushort(struct mcp_parse *buf);
+uint32_t mcp_uint(struct mcp_parse *buf);
+uint64_t mcp_ulong(struct mcp_parse *buf);
 
-mcp_byte_t mcp_byte(struct mcp_parse *buf);
-mcp_short_t mcp_short(struct mcp_parse *buf);
-mcp_int_t mcp_int(struct mcp_parse *buf);
-mcp_long_t mcp_long(struct mcp_parse *buf);
+int8_t mcp_byte(struct mcp_parse *buf);
+int16_t mcp_short(struct mcp_parse *buf);
+int32_t mcp_int(struct mcp_parse *buf);
+int64_t mcp_long(struct mcp_parse *buf);
 
-mcp_bool_t mcp_bool(struct mcp_parse *buf);
+int mcp_bool(struct mcp_parse *buf);
 
 float mcp_float(struct mcp_parse *buf);
 double mcp_double(struct mcp_parse *buf);
@@ -108,17 +138,19 @@ int mcg_svarlong(struct fbuf *buf, mcp_svarlong_t value);
 
 int mcg_bytes(struct fbuf *buf, const void *value, size_t size);
 
-int mcg_ubyte(struct fbuf *buf, mcp_ubyte_t value);
-int mcg_ushort(struct fbuf *buf, mcp_ushort_t value);
-int mcg_uint(struct fbuf *buf, mcp_uint_t value);
-int mcg_ulong(struct fbuf *buf, mcp_ulong_t value);
+int mcg_ubyte(struct fbuf *buf, uint8_t value);
+int mcg_ushort(struct fbuf *buf, uint16_t value);
+int mcg_uint(struct fbuf *buf, uint32_t value);
+int mcg_ulong(struct fbuf *buf, uint64_t value);
 
-int mcg_byte(struct fbuf *buf, mcp_byte_t value);
-int mcg_short(struct fbuf *buf, mcp_short_t value);
-int mcg_int(struct fbuf *buf, mcp_int_t value);
-int mcg_long(struct fbuf *buf, mcp_long_t value);
+int mcg_byte(struct fbuf *buf, int8_t value);
+int mcg_short(struct fbuf *buf, int16_t value);
+int mcg_int(struct fbuf *buf, int32_t value);
+int mcg_long(struct fbuf *buf, int64_t value);
 
-int mcg_bool(struct fbuf *buf, mcp_bool_t value);
+int mcg_bool(struct fbuf *buf, int value);
 
 int mcg_float(struct fbuf *buf, float value);
 int mcg_double(struct fbuf *buf, double value);
+
+#endif

@@ -4,19 +4,20 @@
 #include <string.h>
 #include <assert.h>
 
-/* fbuf valid object assertion
- * 1. (base and size are NULL) or (base and size are not NULL)
- * 2. start < size and end <= size and start <= end
- * 3. start = end = 0 or start < end
- * 4. size <= max
- * */
-#define fbuf_assert(buf)												\
-			assert((buf) &&												\
-					((buf)->base != NULL) == ((buf)->size > 0) &&		\
-					(buf)->end <= (buf)->size &&						\
-					((buf)->start < (buf)->end ||						\
-						((buf)->start == 0 && (buf)->end == 0)) &&		\
-					((buf)->size <= (buf)->max_size))
+/* verify fbuf invariants */
+static inline void fbuf_assert(struct fbuf *buf)
+{
+	/* valid pointer */
+	assert(buf);
+	/* base = NULL <=> buf->size = 0*/
+	assert((buf->base != NULL) == (buf->size > 0));
+	/* start < size and end <= size and start <= end */
+	assert(buf->end <= buf->size);
+	/* start = end = 0 or start < end */
+	assert(buf->start < buf->end || (buf->start == 0 && buf->end == 0));
+	/* limit invariant */
+	assert(buf->size <= buf->max_size);
+}
 
 #define FBUF_INITIAL_SIZE	(1024)
 #define FBUF_EXPAND_COEFF	(2)
