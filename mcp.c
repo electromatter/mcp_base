@@ -66,17 +66,19 @@ const void *mcp_raw(struct mcp_parse *buf, size_t size)
 	return ret;
 }
 
-void mcp_copy_raw(void *dest, struct mcp_parse *buf, size_t size)
+size_t mcp_copy_raw(void *dest, struct mcp_parse *buf, size_t size)
 {
 	/* get the pointer to our raw data and consume it */
 	const void *value = mcp_raw(buf, size);
 
 	/* pass errors */
 	if (!mcp_ok(buf))
-		return;
+		return 0;
 
 	/* copy it out */
 	memcpy(dest, value, size);
+
+	return size;
 }
 
 mcp_varint_t mcp_varint(struct mcp_parse *buf)

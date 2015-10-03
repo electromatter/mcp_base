@@ -2,7 +2,7 @@
 ---
 A simple library for parsing and packing fundimental types
 for building network protocols. Licensed under the permissive ISC
-license. See the LICENSE file for more licensing information.
+license. See the LICENSE file for details.
 
 ## System Requirements
 ---
@@ -59,11 +59,11 @@ fbuf_consume(&buf, ret);
 /* report that we have written ret bytes to fd */
 ```
 
-## API
+## API Documentation
 ---
 ### fbuf.h
 
-##### FBUF_MAX
+##### `FBUF_MAX`
 The default and maximum value of max_size; the absolute maximum size of a fbuf.
 
 ###### `FBUF_INITALIZER`
@@ -126,9 +126,85 @@ succeedes without error, or `1` if new_max is too low and would truncate
 data waiting in `buf`.
 
 ###### `int fbuf_copy(struct fbuf *dest, const void *src, size_t size);`
-Copies `size` bytes from `src` into `dest`, expanding the buffer if neccicary.
+Copies `size` bytes from `src` into `dest`, expanding the buffer if necessary.
 If the copy succeeds without error, `fbuf_copy` returns `0`.
 Otherwise, it returns `1` on error.
 
 ### mcp.h
+### mcp.h
+
+##### Fundimental Types
+| mcp type    | c type                    | mcp type    | ctype                     |
+|-------------|---------------------------|-------------|---------------------------|
+| `raw`       | `void *` with `size_t`    | `ubyte`     | `uint8_t`                 |
+| `bytes`     | `void *` with `size_t`    | `short`     | `uint16_t`                |
+| `string`    | `char *` `NUL`-terminated | `uint`      | `uint32_t`                |
+| `bool`      | `int` as `1` or `0`       | `ulong`     | `uint64_t`                |
+| `varint`    | `uint32_t`                | `byte`      | `int8_t`                  |
+| `varlong`   | `uint64_t`                | `short`     | `int16_t`                 |
+| `svarint`   | `int32_t`                 | `int`       | `int32_t`                 |
+| `svarlong`  | `int64_t`                 | `long`      | `int16_t`                 |
+| `float`     | `float`                   | `double`    | `double`                  |
+
+###### `MCP_BYTES_MAX_SIZE`
+The maximum accepted size of a bytes object. Useful for 
+compatabilitiy with implementations that use varint28 as
+a length prefix.
+
+###### `MCP_EOK`
+No error, the parser will continue to parse data from the buffer.
+
+###### `MCP_EOVERRUN`
+An overrun occured, there was not enough data in the buffer to
+compleatly read the type requested. The parser is left in the
+state as it was passed to the function that asserted this error.
+
+###### `MCP_EOVERFLOW`
+An overflow was caused by the data in the buffer. The parser is
+left in the state as it was passed to the function that asserted
+this error.
+
+###### `int mcp_ok(struct mcp_parse *buf);`
+Returns `1` if there are no errors asserted on `buf`. `0` otherwise.
+
+###### `enum mcp_error_t mcp_error(struct mcp_parse *buf);`
+Returns the error code asserted on `buf`.
+
+###### `void mcp_start(struct mcp_parse *buf. const void *base, size_t size);`
+Initalizes the parser, `buf`, for use with `size` bytes starting at `base`.
+
+###### `int mcp_eof(struct mcp_parse *buf);`
+Returns `1` if the parser has reached the end of the buffer. `0` otherwise.
+
+###### `size_t mcp_avail(struct mcp_parse *buf);`
+Returns the number of bytes waiting to be processed in `buf`.
+
+###### `size_t mcp_copy_*type*(type *dest, struct mcp_parse *buf, size_t max_size);`
+If `dest`, which is `max_size` bytes long, is large enough to
+hold the object in `buf`, then `mcp_copy_*type*` copies the
+object into `dest` and consumes it from `buf` and returns
+the size in bytes of the resultant object in dest, if applicable,
+including the `NUL`-terminator. If `dest` is too small to hold the object
+`MCP_EOVERFLOW` is not asserted, and is not copied to `dest` and the
+object is not consumed from `buf`. If there was an error decoding
+the object from `buf` the error is asserted on `buf` and zero is returned and
+the object is not consumed.
+
+NOTE: For an object to be consumed, the parser simply advances the pointer past the object.
+
+###### `*type* mcp_*type*(struct mcp_parse *buf);`
+Decodes and and consumes returns the decoded object from `buf`. If there was
+an error in decoding the object, an error is asserted on `buf`
+and a place-holder value is returned (typically zero) and the object
+is not consumed.
+
+NOTE: For an object to be consumed, the parser simply advances the pointer past the object.
+
+###### `int mcg_*type*(struct fbuf *buf, *type* value);`
+Packs an `value` into `buf`, expanding `buf` if necessary.
+Returns `0` if successful and `1` if there was an error.
+On error, partial values are not written. This is an
+all-or-nothing function. However, if used as in the example 
+above, `buf` may contain any combonation of failed and succeded
+packed objects if `ret` is 1.
 

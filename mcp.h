@@ -21,7 +21,7 @@
 # define MCP_BYTES_MAX_SIZE			(268435455)
 #endif
 
-enum mcp_error {
+enum mcp_error_t {
 	MCP_EOK							= 0,
 	MCP_EOVERRUN					= 1,
 	MCP_EOVERFLOW					= 2
@@ -33,7 +33,7 @@ struct mcp_parse {
 	/* the start/end of the data */
 	size_t start, end;
 	/* error code on this buffer, zero if none */
-	enum mcp_error error;
+	enum mcp_error_t error;
 };
 
 struct fbuf;
@@ -50,7 +50,7 @@ static inline int mcp_ok(struct mcp_parse *buf)
 }
 
 /* returns the error */
-static inline enum mcp_error mcp_error(struct mcp_parse *buf)
+static inline enum mcp_error_t mcp_error(struct mcp_parse *buf)
 {
 	return buf->error;
 }
@@ -94,7 +94,7 @@ static inline size_t mcp_avail(struct mcp_parse *buf)
  * an error. calls after the error field is set will return a dummy value.
  */
 const void *mcp_raw(struct mcp_parse *buf, size_t size);
-void mcp_copy_raw(void *dest, struct mcp_parse *buf, size_t size);
+size_t mcp_copy_raw(void *dest, struct mcp_parse *buf, size_t size);
 
 mcp_varint_t mcp_varint(struct mcp_parse *buf);
 mcp_varlong_t mcp_varlong(struct mcp_parse *buf);
@@ -106,6 +106,9 @@ const void *mcp_bytes(struct mcp_parse *buf, size_t *size);
  * size of the bytes object, but buf is not touched, resize dest to hold
  * atleast max_size bytes and call this function again to copy the data */
 size_t mcp_copy_bytes(void *dest, struct mcp_parse *buf, size_t max_size);
+/* same as mcp_copy_bytes, except the return value and max_size include
+ * the final NUL-terminator. */
+size_t mcp_copy_string(char *dest, size_t mcp_parse *buf, size_t max_size);
 
 uint8_t mcp_ubyte(struct mcp_parse *buf);
 uint16_t mcp_ushort(struct mcp_parse *buf);
