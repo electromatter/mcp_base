@@ -136,7 +136,7 @@ Otherwise, it returns `1` on error.
 ##### Fundimental Types
 | mcp type    | c type                            | mcp type    | ctype                     |
 |-------------|-----------------------------------|-------------|---------------------------|
-| `raw`       | `void *` with `size_t`            | `ubyte`     | `uint8_t`                 |
+| `raw`       | `void *`                          | `ubyte`     | `uint8_t`                 |
 | `bytes`     | `void *` with `size_t`            | `short`     | `uint16_t`                |
 | `string`    | `utf-8` `char *` `NUL`-terminated | `uint`      | `uint32_t`                |
 | `bool`      | `int` as `1` or `0`               | `ulong`     | `uint64_t`                |
