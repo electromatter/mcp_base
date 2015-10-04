@@ -1,5 +1,4 @@
 # mcp_base
----
 A simple library for parsing and packing fundimental types
 for building network protocols. Licensed under the permissive ISC
 license. See the LICENSE file for details. Comments and Improvements
@@ -9,7 +8,6 @@ NOTE: The tests supplied in tests/ do not exaustively test the contracts
 of all of the functions, but they do check for many different errors.
 
 ## System Requirements
----
 - C99 compiler
 - stdlib: malloc, realloc, free, memmove, memcpy, strlen
 - 8-bit char type
@@ -18,7 +16,6 @@ of all of the functions, but they do check for many different errors.
 - Doubles are IEEE 475 64 bit floats in host endian
 
 ## Example Usage
----
 Parsing a structure containing a varint and a short:
 ```c
 struct mcp_parse buf = MCP_START_INITIALIZER(base, size);
@@ -64,10 +61,9 @@ fbuf_consume(&buf, ret);
 ```
 
 ## API Documentation
----
 ### fbuf.h
 
-##### `FBUF_MAX`
+###### `FBUF_MAX`
 The default and maximum value of max_size; the absolute maximum size of a fbuf.
 
 ###### `FBUF_INITALIZER`
