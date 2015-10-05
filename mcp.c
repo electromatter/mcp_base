@@ -83,39 +83,15 @@ size_t mcp_copy_raw(void *dest, struct mcp_parse *buf, size_t size)
 
 mcp_varint_t mcp_varint(struct mcp_parse *buf)
 {
-	const unsigned char *base = mcp_ptr(buf);
-	mcp_varint_t ret = 0;
-	int offset = 0;
+	mcp_varlong_t value = mcp_varlong(buf);
 
-	/* precondition */
-	assert_valid_mcp(buf);
+	/* check for overflow */
+	if (value > UINT32_MAX) {
+		buf->error = MCP_EOVERFLOW;
+		return value;
+	}
 
-	/* pass errors */
-	if (!mcp_ok(buf))
-		return ret;
-
-	do {
-		/* check if we are in bounds */
-		if ((size_t)offset >= mcp_avail(buf)) {
-			buf->error = MCP_EOVERRUN;
-			return ret;
-		}
-
-		/* check for overflow */
-		if (offset == 4 && base[offset] > 0xf) {
-			buf->error =  MCP_EOVERFLOW;
-			return ret;
-		}
-
-		/* decode one byte */
-		ret |= (mcp_varint_t)(base[offset] & 0x7f) << (offset * 7);
-
-		/* continue while the more-data-bit is set */
-	} while (base[offset++] & 0x80);
-
-	/* consume the pointers */
-	mcp_consume(buf, offset);
-	return ret;
+	return value;
 }
 
 mcp_varlong_t mcp_varlong(struct mcp_parse *buf)

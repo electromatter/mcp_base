@@ -21,32 +21,7 @@ int mcg_raw(struct fbuf *buf, const void *data, size_t size)
 
 int mcg_varint(struct fbuf *buf, mcp_varint_t value)
 {
-	unsigned char *dest = fbuf_wptr(buf, 5);
-	int offset = 0;
-
-	/* we could not allocate enough space. */
-	if (dest == NULL)
-		return 1;
-
-	do {
-		/* write out 7 bits */
-		dest[offset] = value & 0x7f;
-
-		/* if the value is larger than 7 bits,
-		 * then mark that there are more bytes to follow */
-		if (value > 0x7f)
-			dest[offset] |= 0x80;
-
-		/* advance to the next byte */
-		offset++;
-		value >>= 7;
-
-		/* if there are no more bits then stop*/
-	} while(value > 0);
-
-	/*update pointers*/
-	fbuf_produce(buf, offset);
-	return 0;
+	return mcg_varlong(buf, value);
 }
 
 int mcg_varlong(struct fbuf *buf, mcp_varlong_t value)
