@@ -158,18 +158,18 @@ No error, the parser will continue to parse data from the buffer.
 
 ###### `MCP_EOVERRUN`
 An overrun occured, there was not enough data in the buffer to
-compleatly read the type requested. The parser is left in the
-state as it was passed to the function that asserted this error.
+compleatly read the type requested.
 
 ###### `MCP_EOVERFLOW`
 An overflow was encountered when trying to parse the data in the
-buffer. The parser is left in the state as it was passed to the
-function that asserted this error.
+buffer.
 
 ###### `MCP_EINVAL`
 An invalid value was encountered when trying to parse the data
-in the buffer. The perser is left in the state as it was passed
-to the function that asserted this error.
+in the buffer.
+
+NOTE: on error, the parser is left in an undefined state. You can copy
+the parser to save it's state if you need to.
 
 ###### `int mcp_ok(struct mcp_parse *buf);`
 Returns `1` if there are no errors asserted on `buf`. `0` otherwise.
