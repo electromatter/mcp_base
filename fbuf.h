@@ -20,9 +20,8 @@ struct fbuf {
 	size_t size, max_size, start, end;
 };
 
-/* FBUF_MAX is the maximum value of max_size
- * this definition assumes twos complement */
-#define FBUF_MAX				(~(size_t)0)
+/* FBUF_MAX is the maximum value of max_size */
+#define FBUF_MAX				((~(size_t)0) >> 1)
 
 /* use fbuf_init to setup the buffer for first use */
 #define FBUF_INITIALIZER		{NULL, 0, FBUF_MAX, 0, 0}

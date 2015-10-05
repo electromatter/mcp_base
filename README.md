@@ -42,7 +42,7 @@ Readning from a unix socket into a fbuf:
 void *ptr = fbuf_wptr(&buf, BLOCK_SIZE);
 if (ptr == NULL)
     /* Error: Buffer full. */
-int ret = read(fd, ptr, fbuf_wavail(&buf));
+ssize_t ret = read(fd, ptr, fbuf_wavail(&buf));
 if (ret <= 0)
     /* Error: see man read (2) */
 fbuf_produce(&buf, ret);
@@ -53,7 +53,7 @@ Writing to a unix socket from a fbuf:
 ```c
 if (fbuf_avail(&buf) == 0)
     /* Error: No data in buffer to write. */
-int ret = write(fd, fbuf_ptr(&buf), fbuf_avail(&buf));
+ssize_t ret = write(fd, fbuf_ptr(&buf), fbuf_avail(&buf));
 if (ret < 0)
     /* Error: see man write (2) */
 fbuf_consume(&buf, ret);
