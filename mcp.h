@@ -21,11 +21,11 @@
 # define MCP_BYTES_MAX_SIZE			(268435455)
 #endif
 
-enum mcp_error_t {
+typedef enum {
 	MCP_EOK							= 0,
 	MCP_EOVERRUN					= 1,
 	MCP_EOVERFLOW					= 2
-};
+} mcp_error_t;
 
 struct mcp_parse {
 	/* source buffer */
@@ -33,7 +33,7 @@ struct mcp_parse {
 	/* the start/end of the data */
 	size_t start, end;
 	/* error code on this buffer, zero if none */
-	enum mcp_error_t error;
+	mcp_error_t error;
 };
 
 struct fbuf;
@@ -50,7 +50,7 @@ static inline int mcp_ok(struct mcp_parse *buf)
 }
 
 /* returns the error */
-static inline enum mcp_error_t mcp_error(struct mcp_parse *buf)
+static inline mcp_error_t mcp_error(struct mcp_parse *buf)
 {
 	return buf->error;
 }
