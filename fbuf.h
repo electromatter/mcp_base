@@ -71,6 +71,8 @@ static inline size_t fbuf_wavail(struct fbuf *buf)
 
 /* advances the write pointer; produces data */
 void fbuf_produce(struct fbuf *buf, size_t sz);
+/* rolls back sz bytes from the write end */
+void fbuf_unproduce(struct fbuf *buf, size_t sz);
 /* advances the read pointer; consumes data */
 void fbuf_consume(struct fbuf *buf, size_t sz);
 

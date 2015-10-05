@@ -5,8 +5,12 @@ set(CMAKE_C_FLAGS "-std=c99 -Wextra -Wall -pedantic -fno-exceptions -fno-unwind-
 
 add_library(mcp_base fbuf.c mcp.c mcg.c)
 
-enable_testing()
+include(CTest)
 
-include_directories(.)
-add_subdirectory(tests/)
+#enable_testing()
+
+if(BUILD_TESTING)
+	include_directories(.)
+	add_subdirectory(tests/)
+endif()
 

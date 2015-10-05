@@ -60,9 +60,19 @@ void fbuf_produce(struct fbuf *buf, size_t sz)
 	assert_valid_fbuf(buf);
 
 	/* overflow check */
-	assert(sz <= buf->size - buf->end);
+	assert(sz <= fbuf_wavail(buf));
 
 	buf->end += sz;
+}
+
+void fbuf_unproduce(struct fbuf *buf, size_t sz)
+{
+	assert_valid_fbuf(buf);
+
+	/* underflow check */
+	assert(sz <= fbuf_avail(buf));
+
+	buf->end -= sz;
 }
 
 void fbuf_consume(struct fbuf *buf, size_t sz)
