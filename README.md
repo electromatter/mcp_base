@@ -102,6 +102,9 @@ The pointers returned by `fbuf_wptr` and `fbuf_ptr` are invalidated by all `fbuf
 Returns the maximum size that wptr can satisfy without expanding
 the `buf`.
 
+###### `void fbuf_unproduce(struct fbuf *buf, size_t sz);`
+Deletes `sz` bytes from the end of the buffer.
+
 ###### `void fbuf_produce(struct fbuf *buf, size_t sz);`
 Commits `sz` bytes to the buffer that have been written to the
 pointer returned by the most recent call to `fbuf_wptr`.
