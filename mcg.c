@@ -66,8 +66,6 @@ int mcg_svarlong(struct fbuf *buf, mcp_svarlong_t value)
 
 int mcg_bytes(struct fbuf *buf, const void *value, size_t size)
 {
-	size_t old_avail = fbuf_avail(buf);
-
 	/* overflow check */
 	if (size > MCP_BYTES_MAX_SIZE)
 		return 1;
@@ -76,14 +74,7 @@ int mcg_bytes(struct fbuf *buf, const void *value, size_t size)
 	if (mcg_varlong(buf, size))
 		return 1;
 
-	/* copy data */
-	if (mcg_raw(buf, value, size)) {
-		/* restore the old state on failure */
-		fbuf_unproduce(buf, fbuf_avail(buf) - old_avail);
-		return 1;
-	}
-
-	return 0;
+	return mcg_raw(buf, value, size);
 }
 
 int mcg_string(struct fbuf *buf, const char *value)

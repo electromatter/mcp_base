@@ -195,15 +195,15 @@ including the `NUL`-terminator. If `dest` is too small to hold the object
 `MCP_EOVERFLOW` is not asserted, and is not copied to `dest` and the
 object is not consumed from `buf`. If there was an error decoding
 the object from `buf` the error is asserted on `buf` and zero is returned and
-the object is not consumed.
+the parser is left in an undefined state.
 
 NOTE: For an object to be consumed, the parser simply advances the pointer past the object.
 
 ###### `*type* mcp_*type*(struct mcp_parse *buf);`
 Decodes and and consumes returns the decoded object from `buf`. If there was
 an error in decoding the object, an error is asserted on `buf`
-and a place-holder value is returned (typically zero) and the object
-is not consumed.
+and a place-holder value is returned (typically zero) and the parser
+is left an an undefined state.
 
 WARNING: Pointers returned by this function with the types `raw` and `bytes`
 are only valid as long as base is valid. mcp_copy_*type* does not have this
@@ -214,8 +214,23 @@ NOTE: For an object to be consumed, the parser simply advances the pointer past 
 ###### `int mcg_*type*(struct fbuf *buf, *type* value);`
 Packs an `value` into `buf`, expanding `buf` if necessary.
 Returns `0` if successful and `1` if there was an error.
-On error, partial values are not written. This is an
-all-or-nothing function. However, if used as in the example 
-above, `buf` may contain any combonation of failed and succeded
-packed objects if `ret` is 1.
+On error, partial values may be written. If you need an
+all-or-nothing call, store the old buffer size and uncommit
+any partial writes.
+
+An example implementation of this is:
+```c
+size_t old_avail = fbuf_avail(buf);
+int ret = 0;
+/* call generators */
+ret |= mcg_varint_(buf, a);
+ret |= mcg_ushort(buf, b);
+/* ... */
+if (ret) {
+	/* roll back writes */
+	fbuf_unproduce(old_avail - fbuf_avail(buf));
+	/* handle error */
+}
+/* generator succeeded */
+```
 
