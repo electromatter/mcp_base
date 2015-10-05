@@ -162,9 +162,14 @@ compleatly read the type requested. The parser is left in the
 state as it was passed to the function that asserted this error.
 
 ###### `MCP_EOVERFLOW`
-An overflow was caused by the data in the buffer. The parser is
-left in the state as it was passed to the function that asserted
-this error.
+An overflow was encountered when trying to parse the data in the
+buffer. The parser is left in the state as it was passed to the
+function that asserted this error.
+
+###### `MCP_EINVAL`
+An invalid value was encountered when trying to parse the data
+in the buffer. The perser is left in the state as it was passed
+to the function that asserted this error.
 
 ###### `int mcp_ok(struct mcp_parse *buf);`
 Returns `1` if there are no errors asserted on `buf`. `0` otherwise.
