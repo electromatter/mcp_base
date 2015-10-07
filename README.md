@@ -12,8 +12,8 @@ of all of the functions, but they do check for many different errors.
 - stdlib: malloc, realloc, free, memmove, memcpy, strlen
 - 8-bit char type
 - Signed integers are represented using two's complement
-- Floats are IEEE 475 32 bit floats in host endian
-- Doubles are IEEE 475 64 bit floats in host endian
+- Floats are IEEE 754 32 bit floats in host endian
+- Doubles are IEEE 754 64 bit floats in host endian
 
 ## Example Usage
 Parsing a structure containing a varint and a short:
