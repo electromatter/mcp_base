@@ -7,39 +7,13 @@
  * of the ISC license. See the LICENSE file for details.
  */
 
-#include "mcp.h"
+#include "mcp_internal.h"
 
 /* for memcpy */
 #include <string.h>
 
 /* for assert */
 #include <assert.h>
-
-/* asserts a valid buffer */
-static inline void assert_valid_mcp(struct mcp_parse *buf)
-{
-	/* valid pointer */
-	assert(buf);
-	/* offset invariants */
-	assert(buf->start <= buf->end);
-	/* buffer is either empty, or non-empty and non-null*/
-	assert(buf->base != NULL || (buf->base == NULL && buf->start == buf->end));
-	/* error contains a valid error code */
-	assert(buf->error == MCP_EOK || buf->error == MCP_EOVERRUN ||
-			buf->error == MCP_EOVERFLOW);
-}
-
-/* returns the base pointer of the buffer */
-static inline const unsigned char *mcp_ptr(struct mcp_parse *buf)
-{   
-	return buf->base + buf->start;
-}
-
-/* advances the offset; consuming a number of bytes */
-static inline void mcp_consume(struct mcp_parse *buf, size_t size)
-{   
-	buf->start += size;
-} 
 
 const void *mcp_raw(struct mcp_parse *buf, size_t size)
 {
