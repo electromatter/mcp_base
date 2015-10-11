@@ -13,6 +13,9 @@
 
 #include "mcp.h"
 
+/* for assert */
+#include <assert.h>
+
 /* asserts that buf is valid. You should call
  * this at the beginning of every mcp_* function */
 static inline void assert_valid_mcp(struct mcp_parse *buf)

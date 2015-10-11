@@ -12,9 +12,6 @@
 /* for memcpy */
 #include <string.h>
 
-/* for assert */
-#include <assert.h>
-
 const void *mcp_raw(struct mcp_parse *buf, size_t size)
 {
 	const void *ret;
