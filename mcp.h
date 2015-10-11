@@ -23,7 +23,8 @@
 
 typedef enum {
 	MCP_EOK							= 0,
-	MCP_EOVERRUN					= 11,
+	MCP_EAGAIN						= 11,
+	MCP_ENOMEM						= 12,
 	MCP_EOVERFLOW					= 75,
 	MCP_EINVAL						= 22
 } mcp_error_t;

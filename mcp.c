@@ -25,7 +25,7 @@ const void *mcp_raw(struct mcp_parse *buf, size_t size)
 
 	/* bounds check */
 	if (mcp_avail(buf) < size) {
-		buf->error = MCP_EOVERRUN;
+		buf->error = MCP_EAGAIN;
 		return NULL;
 	}
 
@@ -81,7 +81,7 @@ mcp_varlong_t mcp_varlong(struct mcp_parse *buf)
 	do {
 		/* check if we are in bounds */
 		if ((size_t)offset >= mcp_avail(buf)) {
-			buf->error = MCP_EOVERRUN;
+			buf->error = MCP_EAGAIN;
 			return ret;
 		}
 

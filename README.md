@@ -156,9 +156,13 @@ a length prefix.
 ###### `MCP_EOK`
 No error, the parser will continue to parse data from the buffer.
 
-###### `MCP_EOVERRUN`
+###### `MCP_EAGAIN`
 An overrun occurred, there was not enough data in the buffer to
-completely read the type requested.
+completely read the type requested. Retry again later with more
+data.
+
+###### `MCP_ENOMEM`
+There was not enough memory to complete the operation.
 
 ###### `MCP_EOVERFLOW`
 An overflow was encountered when trying to parse the data in the

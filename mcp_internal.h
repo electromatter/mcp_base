@@ -26,9 +26,6 @@ static inline void assert_valid_mcp(struct mcp_parse *buf)
     assert(buf->start <= buf->end);
     /* buffer is either empty, or non-empty and non-null*/
     assert(buf->base != NULL || (buf->base == NULL && buf->start == buf->end));
-    /* error contains a valid error code */
-    assert(buf->error == MCP_EOK || buf->error == MCP_EOVERRUN ||
-            buf->error == MCP_EOVERFLOW);
 }
 
 /* returns the base pointer of the buffer. Use this
