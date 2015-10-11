@@ -131,25 +131,21 @@ size_t fbuf_expand(struct fbuf *buf, size_t requested_size)
 		return fbuf_wavail(buf);
 	}
 
-	/* allocate the new buffer */
+	/* allocate new space */
 	new_size = next_size(requested_size, buf->max_size);
-	new_base = malloc(new_size);
+	new_base = realloc(buf->base, new_size);
 
-	/* check if malloc failed*/
+	/* check if realloc failed */
 	if (new_base == NULL)
 		return fbuf_wavail(buf);
-
-	/* compact the buffer into the new buffer */
-	memcpy(new_base, fbuf_ptr(buf), fbuf_avail(buf));
-
-	if (buf->base)
-		free(buf->base);
 
 	/* update the pointers*/
 	buf->base = new_base;
 	buf->size = new_size;
-	buf->end -= buf->start;
-	buf->start = 0;
+
+	/* turns out that buf needs to be compacted to satisfy the request */
+	if (new_size - buf->start < requested_size)
+		fbuf_compact(buf);
 
 	return fbuf_wavail(buf);
 }
