@@ -78,6 +78,12 @@ static inline size_t mcp_avail(struct mcp_parse *buf)
 	return buf->end - buf->start;
 }
 
+/* returns the number of consumed bytes. */
+static inline size_t mcp_consumed(struct mcp_parse *buf)
+{
+	return buf->start;
+}
+
 /* parse functions consumes data from buf and returns the parsed value
  *
  * pointer values returned from these functions are zero-copy
