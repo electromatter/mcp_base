@@ -4,7 +4,7 @@ for building network protocols. Licensed under the permissive ISC
 license. See the LICENSE file for details. Comments and improvements
 are welcome.
 
-NOTE: The tests supplied in tests/ do not exhaustively test the contracts
+NOTE: The tests supplied in tests do not exhaustively test the contracts
 of all of the functions, but they do check for many different errors.
 
 ## System Requirements
