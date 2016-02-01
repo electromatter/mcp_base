@@ -24,7 +24,7 @@ struct fbuf {
 #define FBUF_MAX				((~(size_t)0) >> 1)
 
 /* use fbuf_init to setup the buffer for first use */
-#define FBUF_INITIALIZER		(struct fbuf){NULL, 0, FBUF_MAX, 0, 0}
+#define FBUF_INITIALIZER		{NULL, 0, FBUF_MAX, 0, 0}
 static inline void fbuf_init(struct fbuf *buf, size_t max)
 {
 	buf->base = NULL;
