@@ -8,10 +8,10 @@
  */
 
 #include <stdlib.h>
-#include "fbuf.h"
-
 #include <string.h>
 #include <assert.h>
+
+#include <mcp_base/fbuf.h>
 
 /* verify fbuf invariants */
 static inline void assert_valid_fbuf(struct fbuf *buf)

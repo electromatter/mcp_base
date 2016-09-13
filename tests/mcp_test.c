@@ -7,9 +7,6 @@
  * of the ISC license. See the LICENSE file for details.
  */
 
-#include "fbuf.h"
-#include "mcp.h"
-
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
@@ -17,6 +14,9 @@
 /* NOTE: It is important that assert always aborts on failed assertion */
 #undef NDEBUG
 #include <assert.h>
+
+#include <mcp_base/fbuf.h>
+#include <mcp_base/mcp.h>
 
 static void simple_test(void)
 {

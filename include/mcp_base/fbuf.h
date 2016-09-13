@@ -69,6 +69,12 @@ static inline size_t fbuf_wavail(struct fbuf *buf)
 	return buf->size - buf->end;
 }
 
+/* get the maximum possible value returned by fbuf_wavail after fbuf_expand */
+static inline size_t fbuf_max_wavail(struct fbuf *buf)
+{
+	return buf->max_size - fbuf_avail(buf);
+}
+
 /* advances the write pointer; produces data */
 void fbuf_produce(struct fbuf *buf, size_t sz);
 /* rolls back sz bytes from the write end */

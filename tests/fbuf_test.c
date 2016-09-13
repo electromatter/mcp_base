@@ -7,14 +7,14 @@
  * of the ISC license. See the LICENSE file for details.
  */
 
-#include "fbuf.h"
-
 #include <stdio.h>
 #include <time.h>
 
 /* NOTE: It is important that assert always aborts on failed assertion */
 #undef NDEBUG
 #include <assert.h>
+
+#include <mcp_base/fbuf.h>
 
 /* keep iterations large enough for a decent chance of catching bugs,
  * but small enough to fit on a machine without causing overflows 

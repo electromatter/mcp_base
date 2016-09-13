@@ -7,11 +7,11 @@
  * of the ISC license. See the LICENSE file for details.
  */
 
-#include "fbuf.h"
-#include "mcp.h"
-
 #include <assert.h>
 #include <string.h>
+
+#include <mcp_base/fbuf.h>
+#include <mcp_base/mcp.h>
 
 int mcg_raw(struct fbuf *buf, const void *data, size_t size)
 {
