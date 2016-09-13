@@ -7,8 +7,8 @@
  * of the ISC license. See the LICENSE file for details.
  */
 
-#ifndef MCP_H
-#define MCP_H
+#ifndef MCP_BASE_MCP_H
+#define MCP_BASE_MCP_H
 
 /* for size_t */
 #include <stdlib.h>

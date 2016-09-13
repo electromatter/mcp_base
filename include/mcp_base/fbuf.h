@@ -7,8 +7,8 @@
  * of the ISC license. See the LICENSE file for details.
  */
 
-#ifndef FBUF_H
-#define FBUF_H
+#ifndef MCP_BASE_FBUF_H
+#define MCP_BASE_FBUF_H
 
 /* for size_t */
 #include <stdlib.h>
