@@ -87,13 +87,13 @@ static inline size_t mcp_consumed(struct mcp_parse *buf)
 /* returns the base pointer of the buffer. Use this
  * to access data in the buffer. */
 static inline const unsigned char *mcp_ptr(struct mcp_parse *buf)
-{   
+{
     return buf->base + buf->start;
 }
 
 /* advances the offset; consuming a number of bytes */
 static inline void mcp_consume(struct mcp_parse *buf, size_t size)
-{   
+{
     buf->start += size;
 }
 

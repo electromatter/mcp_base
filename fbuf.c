@@ -43,7 +43,7 @@ void fbuf_free(struct fbuf *buf)
 	buf->base = 0;
 	buf->size = 0;
 
-	fbuf_clear(buf);	
+	fbuf_clear(buf);
 }
 
 unsigned char *fbuf_wptr(struct fbuf *buf, size_t require)
@@ -176,7 +176,7 @@ int fbuf_shrink(struct fbuf *buf, size_t new_max)
 		buf->max_size = new_max;
 		return 0;
 	}
-	
+
 	/* avoid calling realloc with size=0 */
 	if (new_max == 0) {
 		free(buf->base);
